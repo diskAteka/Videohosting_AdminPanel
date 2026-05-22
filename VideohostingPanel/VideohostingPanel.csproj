@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Libs\SharedLib.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="Classes\Other\Styles.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="SharedLib">
+      <HintPath>Libs\SharedLib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Classes\Other\Styles.xaml" />
+    <Resource Include="Libs\SharedLib.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Classes\Context\" />
+  </ItemGroup>
+
+</Project>
