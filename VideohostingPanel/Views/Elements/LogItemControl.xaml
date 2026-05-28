@@ -47,7 +47,6 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Иконка типа события -->
             <Border Grid.Column="0"
                     Width="50"
                     Height="50"
@@ -67,30 +66,32 @@
             <!-- Информация о событии -->
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="EventTypeText"
-                              Text="Вход в систему"
-                              FontSize="14"
-                              FontWeight="Bold"
-                              Foreground="{StaticResource TextPrimaryBrush}"/>
+                    <TextBlock Text="{Binding Type}"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
 
-                    <Border x:Name="EventTypeBadge"
-                            Background="#338A2BE2"
+                    <Border Background="#338A2BE2"
                             CornerRadius="8"
                             Padding="6,2"
                             Margin="10,0,0,0">
-                        <TextBlock x:Name="EventTypeCodeText"
-                                  Text="INFO"
+                        <TextBlock Text="{Binding Type}"
                                   FontSize="9"
                                   FontWeight="Bold"
                                   Foreground="#FFB794FF"/>
                     </Border>
                 </StackPanel>
 
-                <TextBlock x:Name="UserInfoText"
-                          Text="Пользователь: admin_user"
+                <TextBlock 
                           FontSize="12"
                           Foreground="{StaticResource TextSecondaryBrush}"
-                          Margin="0,5,0,0"/>
+                          Margin="0,5,0,0">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="Пользователь (Id: {0})">
+                            <Binding Path="UserId"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
             </StackPanel>
 
             <!-- Дата и время -->
@@ -104,21 +105,15 @@
                       Fill="Transparent"
                       Width="14"
                       Height="14"/>
-                <TextBlock x:Name="EventDateText"
-                          Text="01.01.2024"
-                          FontSize="11"
-                          Foreground="{StaticResource TextSecondaryBrush}"
-                          Margin="5,0,5,0"/>
-                <TextBlock x:Name="EventTimeText"
-                          Text="15:30:45"
-                          FontSize="11"
-                          FontWeight="Bold"
-                          Foreground="{StaticResource PrimaryRedBrush}"/>
+                <TextBlock Text="{Binding Date, StringFormat='{0:dd.MM.yyyy}'}"
+                           FontSize="11"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           Margin="5,0,5,0"/>
             </StackPanel>
 
             <!-- ID записи -->
-            <TextBlock x:Name="LogIdText" Grid.Column="3"
-                       Text="#12345"
+            <TextBlock Grid.Column="3"
+                       Text="{Binding Id, StringFormat='Id: {0}'}"
                        FontSize="11"
                        VerticalAlignment="Center"
                        FontWeight="Bold"

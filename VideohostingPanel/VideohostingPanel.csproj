@@ -10,7 +10,20 @@
 
   <ItemGroup>
     <Folder Include="Models\" />
-    <Folder Include="ViewModels\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WpfApiClient\WpfApiClient.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="SharedLib">
+      <HintPath>..\WpfApiClient\Libs\SharedLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

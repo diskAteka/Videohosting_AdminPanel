@@ -1,19 +1,22 @@
-﻿using System.Windows;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Windows;
 using System.Windows.Input;
-using VideohostingPanel.Windows;
+using VideohostingPanel.Interfaces;
 
 namespace VideohostingPanel.Views.Windows
 {
-    public partial class LoginWindow : Window
+    public partial class LoginWindow : Window, IService
     {
-        public LoginWindow()
+        private readonly IServiceProvider _serviceProvider;
+
+        public LoginWindow(IServiceProvider serviceProvider)
         {
             InitializeComponent();
+            _serviceProvider = serviceProvider;
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            // Для перетаскивания окна
             if (e.ButtonState == MouseButtonState.Pressed)
             {
                 this.DragMove();
@@ -32,17 +35,13 @@ namespace VideohostingPanel.Views.Windows
 
             if (username == "admin" && password == "admin")
             {
-                // Успешный вход
-                MainWindow mainWindow = new MainWindow();
+                var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
                 mainWindow.Show();
                 this.Close();
             }
             else
             {
-                // Показать сообщение об ошибке
                 ErrorMessageBorder.Visibility = Visibility.Visible;
-
-                // Анимация появления ошибки
                 var storyboard = (System.Windows.Media.Animation.Storyboard)this.Resources["ShowErrorAnimation"];
                 if (storyboard != null)
                 {
