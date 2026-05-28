@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36811.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideohostingPanel", "VideohostingPanel\VideohostingPanel.csproj", "{86A60EDE-75BE-426B-AD3A-E75E25056D64}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfApiClient", "WpfApiClient\WpfApiClient.csproj", "{1A51035F-12E2-410F-8C00-40315B36C22E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{86A60EDE-75BE-426B-AD3A-E75E25056D64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86A60EDE-75BE-426B-AD3A-E75E25056D64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86A60EDE-75BE-426B-AD3A-E75E25056D64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A51035F-12E2-410F-8C00-40315B36C22E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A51035F-12E2-410F-8C00-40315B36C22E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A51035F-12E2-410F-8C00-40315B36C22E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A51035F-12E2-410F-8C00-40315B36C22E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
