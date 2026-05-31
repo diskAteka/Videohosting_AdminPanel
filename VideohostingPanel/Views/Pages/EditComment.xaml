@@ -1,8 +1,10 @@
 ﻿<Page x:Class="VideohostingPanel.Views.Pages.EditComment"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:services="clr-namespace:VideohostingPanel.Services"
+      xmlns:converters="clr-namespace:VideohostingPanel.Converters"
       mc:Ignorable="d"
       Title="EditCommentPage"
       MinWidth="1200" MinHeight="800"
@@ -17,35 +19,13 @@
     </Page.Resources>
 
     <Grid>
-        <!-- Прозрачный градиентный фон для анимаций переходов -->
-        <Grid x:Name="BackgroundGrid" Opacity="0.95">
-            <Grid.Background>
-                <RadialGradientBrush Center="0.8,0.2" RadiusX="1.2" RadiusY="1.2">
-                    <GradientStop Color="#2D0B4A" Offset="0"/>
-                    <GradientStop Color="#0A0A0A" Offset="1"/>
-                </RadialGradientBrush>
-            </Grid.Background>
+        <Grid.Background>
+            <RadialGradientBrush Center="0.8,0.2" RadiusX="1.2" RadiusY="1.2">
+                <GradientStop Color="#2D0B4A" Offset="0"/>
+                <GradientStop Color="#0A0A0A" Offset="1"/>
+            </RadialGradientBrush>
+        </Grid.Background>
 
-            <!-- Декоративный паттерн -->
-            <Rectangle Opacity="0.02">
-                <Rectangle.Fill>
-                    <DrawingBrush Viewport="0,0,20,20" ViewportUnits="Absolute" TileMode="Tile">
-                        <DrawingBrush.Drawing>
-                            <GeometryDrawing Brush="White">
-                                <GeometryDrawing.Geometry>
-                                    <GeometryGroup>
-                                        <LineGeometry StartPoint="0,0" EndPoint="20,20"/>
-                                        <LineGeometry StartPoint="20,0" EndPoint="0,20"/>
-                                    </GeometryGroup>
-                                </GeometryDrawing.Geometry>
-                            </GeometryDrawing>
-                        </DrawingBrush.Drawing>
-                    </DrawingBrush>
-                </Rectangle.Fill>
-            </Rectangle>
-        </Grid>
-
-        <!-- Основной контент с отступами -->
         <Grid Margin="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -53,23 +33,14 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Кнопка назад (вместо крестика) -->
-            <Border Grid.Row="0"
-                    Background="Transparent"
-                    Margin="0,0,0,10"
-                    HorizontalAlignment="Left">
-                <Button x:Name="BackButton"
+            <!-- Кнопка назад -->
+            <Border Grid.Row="0" Background="Transparent" Margin="0,0,0,10" HorizontalAlignment="Left">
+                <Button Command="{Binding GoBackCommand}"
                         Style="{StaticResource BaseButtonStyle}"
                         Background="{StaticResource DarkBackgroundBrush}"
-                        Width="100"
-                        Height="35"
-                        FontSize="12">
+                        Width="100" Height="35" FontSize="12">
                     <StackPanel Orientation="Horizontal">
-                        <Path Data="M0,10 L10,0 L10,20 Z"
-                              Fill="{StaticResource PrimaryPurpleBrush}"
-                              Width="10"
-                              Height="10"
-                              Margin="0,0,5,0"/>
+                        <Image Source="/Resources/Images/ic_arrow_back.png" Width="10" Height="10" Margin="0,0,5,0"/>
                         <TextBlock Text="Назад"/>
                     </StackPanel>
                 </Button>
@@ -81,7 +52,6 @@
                     CornerRadius="20"
                     BorderBrush="{StaticResource PrimaryPurpleBrush}"
                     BorderThickness="1">
-
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -92,220 +62,106 @@
                     <!-- Заголовок -->
                     <Border Grid.Row="0"
                             Background="{StaticResource HeaderGradient}"
-                            CornerRadius="20,20,0,0"
-                            Height="70">
-                        <Grid>
-                            <TextBlock Text="Редактирование комментария"
-                                      FontSize="24"
-                                      FontWeight="Bold"
-                                      Foreground="White"
-                                      HorizontalAlignment="Center"
-                                      VerticalAlignment="Center"/>
-                        </Grid>
+                            CornerRadius="20,20,0,0" Height="70">
+                        <TextBlock Text="Редактирование комментария" FontSize="24" FontWeight="Bold"
+                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
 
                     <!-- Форма -->
-                    <ScrollViewer Grid.Row="1"
-                                 Style="{StaticResource BaseScrollViewerStyle}"
-                                 VerticalScrollBarVisibility="Auto"
-                                 HorizontalScrollBarVisibility="Disabled">
+                    <ScrollViewer Grid.Row="1" Style="{StaticResource BaseScrollViewerStyle}"
+                                  VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <StackPanel Margin="20">
-
                             <!-- ID комментария -->
-                            <TextBlock Text="ID комментария"
-                                      Style="{StaticResource SubHeaderStyle}"
-                                      Margin="0,0,0,5"
-                                      FontSize="12"/>
-                            <TextBox x:Name="P_Id"
-                                    Text="78"
-                                    Style="{StaticResource BaseTextBoxStyle}"
-                                    IsReadOnly="True"
-                                    Background="{StaticResource DarkBackgroundBrush}"
-                                    Margin="0,0,0,15"/>
+                            <TextBlock Text="ID комментария" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                            <TextBox Text="{Binding Comment.Id}" Style="{StaticResource BaseTextBoxStyle}"
+                                     IsReadOnly="True" Background="{StaticResource DarkBackgroundBrush}" Margin="0,0,0,15"/>
 
-                            <!-- Информация о видео с поиском по ID -->
+                            <!-- Видео -->
+                            <TextBlock Text="Видео" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                             <Grid Margin="0,0,0,15">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <!-- Заголовок -->
-                                <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
-                                           Text="Видео"
-                                           Style="{StaticResource SubHeaderStyle}"
-                                           Margin="0,0,0,5"
-                                           FontSize="12"/>
-
-                                <!-- ComboBox с видео -->
-                                <ComboBox Grid.Row="1" Grid.Column="0"
-                                         x:Name="P_VideoComboBox"
-                                         Style="{StaticResource BaseComboBoxStyle}"
-                                         Margin="0,0,10,0">
-                                    <ComboBoxItem Content="Удивительное путешествие по горам (ID: 123)" IsSelected="True"/>
-                                    <ComboBoxItem Content="Обзор нового автомобиля (ID: 124)"/>
-                                </ComboBox>
-
-                                <!-- Поиск по ID видео -->
-                                <Border Grid.Row="1" Grid.Column="1"
-                                        Background="{StaticResource DarkBackgroundBrush}"
-                                        CornerRadius="14"
-                                        BorderBrush="{StaticResource PrimaryPurpleBrush}"
-                                        BorderThickness="1">
+                                <ComboBox Grid.Column="0"
+                                          ItemsSource="{Binding Videos}" SelectedItem="{Binding SelectedVideo}"
+                                          DisplayMemberPath="DisplayName"
+                                          Style="{StaticResource BaseComboBoxStyle}" Margin="0,0,10,0"/>
+                                <Border Grid.Column="1" Background="{StaticResource DarkBackgroundBrush}"
+                                        CornerRadius="14" BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="60"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-
-                                        <TextBlock Grid.Column="0"
-                                                   Text="ID:"
-                                                   FontSize="14"
+                                        <TextBlock Grid.Column="0" Text="ID:" FontSize="14"
                                                    Foreground="{StaticResource TextSecondaryBrush}"
-                                                   VerticalAlignment="Center"
-                                                   Margin="10,0,5,0"/>
-
-                                        <TextBox x:Name="P_VideoSearchIdTextBox"
-                                                 Grid.Column="1"
-                                                 Background="Transparent"
-                                                 BorderThickness="0"
-                                                 Foreground="{StaticResource TextPrimaryBrush}"
-                                                 FontSize="14"
-                                                 VerticalAlignment="Center"
-                                                 Padding="5,0"
-                                                 MaxLength="10"/>
-
-                                        <Button x:Name="P_SearchVideoByIdButton"
-                                                Click="SearchVideoById"
-                                                Grid.Column="2"
-                                                Content="Найти"
-                                                Style="{StaticResource BaseButtonStyle}"
-                                                Height="35"
-                                                Width="60"
-                                                Margin="0,0,5,0"
-                                                FontSize="11"/>
+                                                   VerticalAlignment="Center" Margin="10,0,5,0"/>
+                                        <TextBox Grid.Column="1" Text="{Binding VideoSearchId}"
+                                                 Background="Transparent" BorderThickness="0"
+                                                 Foreground="{StaticResource TextPrimaryBrush}" FontSize="14"
+                                                 VerticalAlignment="Center" Padding="5,0" MaxLength="10"/>
+                                        <Button Grid.Column="2" Content="Найти" Command="{Binding SearchVideoByIdCommand}"
+                                                Style="{StaticResource BaseButtonStyle}" Height="35" Width="60"
+                                                Margin="0,0,5,0" FontSize="11"/>
                                     </Grid>
                                 </Border>
                             </Grid>
 
-                            <!-- Информация о пользователе с поиском по ID -->
+                            <!-- Пользователь -->
+                            <TextBlock Text="Автор комментария" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                             <Grid Margin="0,0,0,15">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <!-- Заголовок -->
-                                <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
-                                           Text="Автор комментария"
-                                           Style="{StaticResource SubHeaderStyle}"
-                                           Margin="0,0,0,5"
-                                           FontSize="12"/>
-
-                                <!-- ComboBox с пользователями -->
-                                <ComboBox Grid.Row="1" Grid.Column="0"
-                                         x:Name="P_UserComboBox"
-                                         Style="{StaticResource BaseComboBoxStyle}"
-                                         Margin="0,0,10,0">
-                                    <ComboBoxItem Content="Иван Иванов (ID: 42)" IsSelected="True"/>
-                                    <ComboBoxItem Content="Петр Петров (ID: 43)"/>
-                                </ComboBox>
-
-                                <!-- Поиск по ID пользователя -->
-                                <Border Grid.Row="1" Grid.Column="1"
-                                        Background="{StaticResource DarkBackgroundBrush}"
-                                        CornerRadius="14"
-                                        BorderBrush="{StaticResource PrimaryPurpleBrush}"
-                                        BorderThickness="1">
+                                <ComboBox Grid.Column="0"
+                                          ItemsSource="{Binding Users}" SelectedItem="{Binding SelectedUser}"
+                                          DisplayMemberPath="DisplayName"
+                                          Style="{StaticResource BaseComboBoxStyle}" Margin="0,0,10,0"/>
+                                <Border Grid.Column="1" Background="{StaticResource DarkBackgroundBrush}"
+                                        CornerRadius="14" BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="60"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-
-                                        <TextBlock Grid.Column="0"
-                                                   Text="ID:"
-                                                   FontSize="14"
+                                        <TextBlock Grid.Column="0" Text="ID:" FontSize="14"
                                                    Foreground="{StaticResource TextSecondaryBrush}"
-                                                   VerticalAlignment="Center"
-                                                   Margin="10,0,5,0"/>
-
-                                        <TextBox x:Name="P_UserSearchIdTextBox"
-                                                 Grid.Column="1"
-                                                 Background="Transparent"
-                                                 BorderThickness="0"
-                                                 Foreground="{StaticResource TextPrimaryBrush}"
-                                                 FontSize="14"
-                                                 VerticalAlignment="Center"
-                                                 Padding="5,0"
-                                                 MaxLength="10"/>
-
-                                        <Button x:Name="P_SearchUserByIdButton"
-                                                Grid.Column="2"
-                                                Content="Найти"
-                                                Click="SearchUserById"
-                                                Style="{StaticResource BaseButtonStyle}"
-                                                Height="35"
-                                                Width="60"
-                                                Margin="0,0,5,0"
-                                                FontSize="11"/>
+                                                   VerticalAlignment="Center" Margin="10,0,5,0"/>
+                                        <TextBox Grid.Column="1" Text="{Binding UserSearchId}"
+                                                 Background="Transparent" BorderThickness="0"
+                                                 Foreground="{StaticResource TextPrimaryBrush}" FontSize="14"
+                                                 VerticalAlignment="Center" Padding="5,0" MaxLength="10"/>
+                                        <Button Grid.Column="2" Content="Найти" Command="{Binding SearchUserByIdCommand}"
+                                                Style="{StaticResource BaseButtonStyle}" Height="35" Width="60"
+                                                Margin="0,0,5,0" FontSize="11"/>
                                     </Grid>
                                 </Border>
                             </Grid>
 
                             <!-- Текст комментария -->
-                            <TextBlock Text="Текст комментария *"
-                                      Style="{StaticResource SubHeaderStyle}"
-                                      Margin="0,0,0,5"
-                                      FontSize="12"/>
-                            <TextBox x:Name="P_CommentTextTextBox"
-                                    Text="Отличное видео! Очень понравилось, спасибо автору."
-                                    Style="{StaticResource BaseTextBoxStyle}"
-                                    Height="120"
-                                    TextWrapping="Wrap"
-                                    AcceptsReturn="True"
-                                    Margin="0,0,0,15"/>
+                            <TextBlock Text="Текст комментария *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                            <TextBox Text="{Binding Comment.Text}" Style="{StaticResource BaseTextBoxStyle}"
+                                     Height="120" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,15"/>
 
                             <!-- Дата -->
-                            <TextBlock Text="Дата комментария"
-                                      Style="{StaticResource SubHeaderStyle}"
-                                      Margin="0,0,0,5"
-                                      FontSize="12"/>
-                            <TextBox x:Name="P_DateTextBox"
-                                    Text="15.03.2024 18:42"
-                                    Style="{StaticResource BaseTextBoxStyle}"
-                                    IsReadOnly="True"
-                                    Background="{StaticResource DarkBackgroundBrush}"
-                                    Margin="0,0,0,15"/>
+                            <TextBlock Text="Дата комментария" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                            <TextBox Text="{Binding Comment.Date, StringFormat=\{0:dd.MM.yyyy HH:mm\}}"
+                                     Style="{StaticResource BaseTextBoxStyle}" IsReadOnly="True"
+                                     Background="{StaticResource DarkBackgroundBrush}" Margin="0,0,0,15"/>
 
-                            <!-- Кнопка удалить (без подложки, как часть контента) -->
-                            <Button x:Name="P_DeleteButton"
-                                   Content="УДАЛИТЬ КОММЕНТАРИЙ"
-                                    Click="DeleteRecord"
-                                   Background="#66FF0000"
-                                   Style="{StaticResource BaseButtonStyle}"
-                                   Height="45"
-                                   Margin="0,20,0,0"
-                                   HorizontalAlignment="Center"
-                                   Width="250"/>
+                            <!-- Кнопка удалить -->
+                            <Button Content="УДАЛИТЬ КОММЕНТАРИЙ" Command="{Binding DeleteCommand}"
+                                    Background="#66FF0000" Style="{StaticResource BaseButtonStyle}"
+                                    Height="45" Margin="0,20,0,0" HorizontalAlignment="Center" Width="250"/>
                         </StackPanel>
                     </ScrollViewer>
 
                     <!-- Кнопки действий -->
-                    <Border Grid.Row="2"
-                            Background="{StaticResource DarkTertiaryBrush}"
-                            CornerRadius="0,0,20,20"
-                            Padding="20">
+                    <Border Grid.Row="2" Background="{StaticResource DarkTertiaryBrush}" CornerRadius="0,0,20,20" Padding="20">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -313,28 +169,16 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-
-                            <Button Grid.Column="1"
-                                   x:Name="P_SaveButton"
-                                    Click="SaveChanges"
-                                   Content="Сохранить"
-                                   Style="{StaticResource BaseButtonStyle}"
-                                   Width="120"
-                                   Margin="10"/>
-                            <Button Grid.Column="2"
-                                   x:Name="P_CancelButton"
-                                    Click="Cancel"
-                                   Content="Отмена"
-                                   Style="{StaticResource BaseButtonStyle}"
-                                   Background="{StaticResource DarkBackgroundBrush}"
-                                   Width="120"
-                                   Margin="10"/>
+                            <Button Grid.Column="1" Content="Сохранить" Command="{Binding SaveCommand}"
+                                    Style="{StaticResource BaseButtonStyle}" Width="120" Margin="10"/>
+                            <Button Grid.Column="2" Content="Отмена" Command="{Binding CancelCommand}"
+                                    Style="{StaticResource BaseButtonStyle}" Background="{StaticResource DarkBackgroundBrush}"
+                                    Width="120" Margin="10"/>
                         </Grid>
                     </Border>
                 </Grid>
             </Border>
 
-            <!-- Нижний отступ для баланса -->
             <Border Grid.Row="2" Height="10" Background="Transparent"/>
         </Grid>
     </Grid>

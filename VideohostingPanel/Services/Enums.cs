@@ -1,4 +1,4 @@
-﻿namespace VideohostingPanel.Serevices
+﻿namespace VideohostingPanel.Services
 {
     public enum Tables
     {

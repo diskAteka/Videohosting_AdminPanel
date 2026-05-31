@@ -24,7 +24,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Image Source="{Binding PosterUrl}" Width="80" Height="45"
+            <Image Source="{Binding PosterUrl}" Width="80" Height="45" Grid.Column="0"
                    Stretch="UniformToFill" Margin="0,0,15,0"
                    VerticalAlignment="Center"/>
 

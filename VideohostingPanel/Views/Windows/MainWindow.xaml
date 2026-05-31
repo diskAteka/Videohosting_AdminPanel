@@ -11,17 +11,17 @@
         AllowsTransparency="True"
         Background="Transparent"
         WindowStyle="None"
-        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/VideohostingPanel;component/Resources/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <!-- Конвертер для видимости в зависимости от роли (заглушка) -->
             <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
-            <!-- Стиль для кнопок сортировки с CornerRadius -->
+            <!-- Стиль для кнопок сортировки -->
             <Style x:Key="SortButtonStyle" TargetType="Button">
                 <Setter Property="Width" Value="40"/>
                 <Setter Property="Height" Value="40"/>
@@ -47,7 +47,6 @@
     </Window.Resources>
 
     <Grid>
-        <!-- Основной фон -->
         <Grid.Background>
             <RadialGradientBrush Center="0.8,0.2" RadiusX="1.2" RadiusY="1.2">
                 <GradientStop Color="#2D0B4A" Offset="0"/>
@@ -55,7 +54,6 @@
             </RadialGradientBrush>
         </Grid.Background>
 
-        <!-- Декоративный паттерн -->
         <Rectangle Opacity="0.02">
             <Rectangle.Fill>
                 <DrawingBrush Viewport="0,0,20,20" ViewportUnits="Absolute" TileMode="Tile">
@@ -72,7 +70,9 @@
                 </DrawingBrush>
             </Rectangle.Fill>
         </Rectangle>
+
         <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
+
         <Grid Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -94,71 +94,46 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Логотип -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="20,15">
                         <TextBlock Text="ВидеоХостинг" 
-                                  FontSize="20" 
-                                  FontWeight="Bold"
+                                  FontSize="20" FontWeight="Bold"
                                   Foreground="{StaticResource PrimaryRedBrush}"/>
                         <TextBlock Text="Admin" 
-                                  FontSize="16" 
-                                  Margin="10,0,0,0"
+                                  FontSize="16" Margin="10,0,0,0"
                                   Foreground="{StaticResource PrimaryPurpleBrush}"/>
                     </StackPanel>
 
-                    <!-- Информация о пользователе -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="20,15">
-                        <TextBlock x:Name="UserNameText" 
-                                  Text="Администратор" 
+                        <TextBlock Text="{Binding UserDisplayName}" 
                                   FontSize="16"
                                   Foreground="{StaticResource TextSecondaryBrush}"
                                   VerticalAlignment="Center"/>
 
                         <!-- Кнопка выхода -->
-                        <Button x:Name="LogoutButton"
-                                Width="35"
-                                Height="35"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Margin="15,0,0,0"
-                                Cursor="Hand"
-                                Click="LogoutButton_Click">
+                        <Button Command="{Binding LogoutCommand}"
+                                Width="35" Height="35"
+                                Background="Transparent" BorderThickness="0"
+                                Margin="15,0,0,0" Cursor="Hand">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}"
-                                            CornerRadius="17.5">
-                                        <Path Data="M5,5 L20,20 M20,5 L5,20"
-                                              Stroke="{StaticResource PrimaryRedBrush}"
-                                              StrokeThickness="2"
-                                              Width="15"
-                                              Height="15"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                                        <Image Source="/Images/exit_icon.png" Width="15" Height="15"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                 </ControlTemplate>
                             </Button.Template>
                         </Button>
 
                         <!-- Кнопка закрытия -->
-                        <Button x:Name="CloseButton"
-                                Width="35"
-                                Height="35"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Margin="5,0,0,0"
-                                Cursor="Hand"
-                                Click="CloseButton_Click">
+                        <Button Command="{Binding CloseApplicationCommand}"
+                                Width="35" Height="35"
+                                Background="Transparent" BorderThickness="0"
+                                Margin="5,0,0,0" Cursor="Hand">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}"
-                                            CornerRadius="17.5">
-                                        <Path Data="M0,0 L15,15 M15,0 L0,15"
-                                              Stroke="White"
-                                              StrokeThickness="2"
-                                              Width="15"
-                                              Height="15"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                                        <Image Source="/Images/close_icon.png" Width="15" Height="15"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                 </ControlTemplate>
                             </Button.Template>
@@ -176,22 +151,20 @@
                     Opacity="0.95">
                 <Grid>
                     <!-- Панель администратора -->
-                    <Grid x:Name="AdminPanel" Visibility="Visible">
+                    <Grid Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Панель выбора таблицы -->
+                        <!-- Панель выбора и поиска -->
                         <Border Grid.Row="0"
                                 Background="{StaticResource DarkTertiaryBrush}"
-                                CornerRadius="15,15,0,0"
-                                Padding="20">
+                                CornerRadius="15,15,0,0" Padding="20">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="300"/>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
@@ -199,117 +172,150 @@
 
                                 <TextBlock Grid.Column="0"
                                            Text="Таблица:"
-                                           FontSize="18"
-                                           FontWeight="SemiBold"
+                                           FontSize="18" FontWeight="SemiBold"
                                            Foreground="{StaticResource TextSecondaryBrush}"
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,20,0"/>
+                                           VerticalAlignment="Center" Margin="0,0,20,0"/>
 
-                                <ComboBox x:Name="TablesComboBox"
-                                          Grid.Column="1"
-                                          SelectionChanged="DrawElemets"
-                                          Style="{StaticResource BaseComboBoxStyle}"
-                                          SelectedIndex="0">
-                                    <ComboBoxItem Content="Video"/>
-                                    <ComboBoxItem Content="User"/>
-                                    <ComboBoxItem Content="ServerLog"/>
-                                    <ComboBoxItem Content="Comment"/>
-                                    <ComboBoxItem Content="Like"/>
-                                    <ComboBoxItem Content="DisLike"/>
-                                    <ComboBoxItem Content="View"/>
-                                    <ComboBoxItem Content="Emploee"/>
-                                </ComboBox>
+                                <ComboBox Grid.Column="1"
+                                          ItemsSource="{Binding AvailableTables}"
+                                          SelectedItem="{Binding SelectedTable}"
+                                          Style="{StaticResource BaseComboBoxStyle}" Width="200"/>
 
-                                <!-- Поиск по ID -->
-                                <Border Grid.Column="2"
-                                        Background="{StaticResource DarkSecondaryBrush}"
-                                        CornerRadius="14"
-                                        BorderBrush="{StaticResource PrimaryPurpleBrush}"
-                                        BorderThickness="1"
-                                        Margin="20,0,0,0">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="100"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
+                                <!-- Динамическая панель поиска -->
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="20,0">
 
-                                        <TextBlock Grid.Column="0"
-                                                   Text="ID:"
-                                                   FontSize="14"
-                                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                                   VerticalAlignment="Center"
-                                                   Margin="10,0,5,0"/>
+                                    <!-- Поиск по ID (виден всегда) -->
+                                    <Border Background="{StaticResource DarkSecondaryBrush}"
+                                            CornerRadius="14"
+                                            BorderBrush="{StaticResource PrimaryPurpleBrush}"
+                                            BorderThickness="1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="100"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="ID:" FontSize="14"
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       VerticalAlignment="Center" Margin="10,0,5,0"/>
+                                            <TextBox Grid.Column="1" Text="{Binding SearchIdText}"
+                                                     Background="Transparent" BorderThickness="0"
+                                                     Foreground="{StaticResource TextPrimaryBrush}" FontSize="14"
+                                                     VerticalAlignment="Center" Padding="5,0" MaxLength="10"/>
+                                            <Button Grid.Column="2" Content="Найти" Command="{Binding SearchByIdCommand}"
+                                                    Style="{StaticResource BaseButtonStyle}" Height="35" Width="70"
+                                                    Margin="0,0,5,0" FontSize="12"/>
+                                        </Grid>
+                                    </Border>
 
-                                        <TextBox x:Name="SearchIdTextBox"
-                                                 Grid.Column="1"
-                                                 Background="Transparent"
-                                                 BorderThickness="0"
-                                                 Foreground="{StaticResource TextPrimaryBrush}"
-                                                 FontSize="14"
-                                                 VerticalAlignment="Center"
-                                                 Padding="5,0"
-                                                 MaxLength="10"/>
+                                    <!-- Поиск по имени (виден для Video, User, Emploee) -->
+                                    <Border Background="{StaticResource DarkSecondaryBrush}"
+                                            CornerRadius="14"
+                                            BorderBrush="{StaticResource PrimaryPurpleBrush}"
+                                            BorderThickness="1"
+                                            Margin="10,0,0,0"
+                                            Visibility="{Binding IsNameSearchVisible, Converter={StaticResource BoolToVis}}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="Имя:" FontSize="14"
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       VerticalAlignment="Center" Margin="10,0,5,0"/>
+                                            <TextBox Grid.Column="1" Text="{Binding SearchNameText}"
+                                                     Background="Transparent" BorderThickness="0"
+                                                     Foreground="{StaticResource TextPrimaryBrush}" FontSize="14"
+                                                     VerticalAlignment="Center" Padding="5,0"/>
+                                            <Button Grid.Column="2" Content="Найти" Command="{Binding SearchByNameCommand}"
+                                                    Style="{StaticResource BaseButtonStyle}" Height="35" Width="70"
+                                                    Margin="0,0,5,0" FontSize="12"/>
+                                        </Grid>
+                                    </Border>
 
-                                        <Button x:Name="SearchByIdButton"
-                                                Click="SearchById"
-                                                Grid.Column="2"
-                                                Content="Найти"
-                                                Style="{StaticResource BaseButtonStyle}"
-                                                Height="35"
-                                                Width="70"
-                                                Margin="0,0,5,0"
-                                                FontSize="12"/>
-                                    </Grid>
-                                </Border>
+                                    <!-- Поиск по тексту (виден только для Comment) -->
+                                    <Border Background="{StaticResource DarkSecondaryBrush}"
+                                            CornerRadius="14"
+                                            BorderBrush="{StaticResource PrimaryPurpleBrush}"
+                                            BorderThickness="1"
+                                            Margin="10,0,0,0"
+                                            Visibility="{Binding IsTextSearchVisible, Converter={StaticResource BoolToVis}}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="Текст:" FontSize="14"
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       VerticalAlignment="Center" Margin="10,0,5,0"/>
+                                            <TextBox Grid.Column="1" Text="{Binding SearchText}"
+                                                     Background="Transparent" BorderThickness="0"
+                                                     Foreground="{StaticResource TextPrimaryBrush}" FontSize="14"
+                                                     VerticalAlignment="Center" Padding="5,0"/>
+                                            <Button Grid.Column="2" Content="Найти" Command="{Binding SearchByTextCommand}"
+                                                    Style="{StaticResource BaseButtonStyle}" Height="35" Width="70"
+                                                    Margin="0,0,5,0" FontSize="12"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Выпадающий список типов логов (виден только для ServerLog) -->
+                                    <ComboBox ItemsSource="{Binding LogTypes}"
+                                              SelectedItem="{Binding SelectedLogType}"
+                                              Style="{StaticResource BaseComboBoxStyle}"
+                                              Width="150" Margin="10,0,0,0"
+                                              Visibility="{Binding IsLogTypeVisible, Converter={StaticResource BoolToVis}}"/>
+                                </StackPanel>
 
                                 <!-- Кнопки сортировки -->
-                                <StackPanel Grid.Column="4" Orientation="Horizontal">
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="20,0,0,0">
                                     <TextBlock Text="Сортировка:"
                                                FontSize="14"
                                                Foreground="{StaticResource TextSecondaryBrush}"
                                                VerticalAlignment="Center"
                                                Margin="0,0,10,0"/>
 
-                                    <Button x:Name="SortAscButton"
-                                            Style="{StaticResource SortButtonStyle}"
-                                            Margin="0,0,5,0"
-                                            Click="SortAscButton_Click">
-                                        <Path Data="M0,5 L10,5 L5,0 L0,5"
-                                              Fill="{StaticResource PrimaryPurpleBrush}"
-                                              Width="12"
-                                              Height="12"/>
+                                    <Button Command="{Binding SortAscendingCommand}"
+                                            Style="{StaticResource SortButtonStyle}" Margin="0,0,5,0">
+                                        <Image Source="/Resources/Images/ic_arrow_down.png" Width="12" Height="12"/>
                                     </Button>
 
-                                    <Button x:Name="SortDescButton"
-                                            Style="{StaticResource SortButtonStyle}"
-                                            Click="SortDescButton_Click">
-                                        <Path Data="M0,0 L10,0 L5,5 L0,0"
-                                              Fill="{StaticResource PrimaryPurpleBrush}"
-                                              Width="12"
-                                              Height="12"/>
+                                    <Button Command="{Binding SortDescendingCommand}"
+                                            Style="{StaticResource SortButtonStyle}">
+                                        <Image Source="/Resources/Images/ic_arrow_up.png" Width="12" Height="12"/>
                                     </Button>
                                 </StackPanel>
                             </Grid>
                         </Border>
 
                         <!-- Контейнер для записей -->
-                        <Border Grid.Row="1"
-                                Background="Transparent"
-                                Margin="0">
+                        <Border Grid.Row="1" Background="Transparent" Margin="0">
                             <ScrollViewer Style="{StaticResource BaseScrollViewerStyle}"
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled">
-                                <StackPanel x:Name="ItemsContainer" 
-                                            Style="{StaticResource ItemsStackPanelStyle}"/>
+                                <StackPanel Style="{StaticResource ItemsStackPanelStyle}">
+                                    <!-- Кнопка "+" (AddItemControl) -->
+                                    <ContentControl Content="{Binding}"
+                                                    Visibility="{Binding IsAddButtonVisible, Converter={StaticResource BoolToVis}}"
+                                                    Template="{StaticResource AddItemControlTemplate}"/>
+
+                                    <!-- Элементы записей -->
+                                    <ItemsControl ItemsSource="{Binding Records}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <ContentPresenter Content="{Binding}"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
                             </ScrollViewer>
                         </Border>
 
-                        <!-- Нижняя панель с информацией -->
+                        <!-- Нижняя панель пагинации -->
                         <Border Grid.Row="2"
                                 Background="{StaticResource DarkTertiaryBrush}"
-                                CornerRadius="0,0,15,15"
-                                Padding="20">
+                                CornerRadius="0,0,15,15" Padding="20">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -317,76 +323,59 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Кнопка предыдущих записей -->
                                 <Button Grid.Column="0"
-                                        Click="PreviousRecords"
-                                        x:Name="LoadPreviousButton"
+                                        Command="{Binding LoadPreviousCommand}"
                                         Content="Предыдущие 10 записей"
                                         Style="{StaticResource BaseButtonStyle}"
                                         Background="{StaticResource DarkBackgroundBrush}"
-                                        Height="40"
-                                        Width="250"
-                                        FontSize="14"
-                                        Margin="0,0,20,0"/>
+                                        Height="40" Width="250" FontSize="14" Margin="0,0,20,0"/>
+
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock Margin="10,0,10,0"
-                                           x:Name="PageCount" 
-                                           Text="Страница 1"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center"/>
-                                    <TextBlock Margin="10,0,10,0"
-                                           x:Name="ItemsCountText"
-                                           Text="Всего записей: 0"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{Binding PageInfo}" Margin="10,0"
+                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                               FontSize="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding TotalItemsInfo}" Margin="10,0"
+                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                               FontSize="14" VerticalAlignment="Center"/>
                                 </StackPanel>
 
-
-                                <!-- Кнопка следующих записей -->
                                 <Button Grid.Column="2"
-                                        Click="NextRecords"
-                                        x:Name="LoadMoreButton"
+                                        Command="{Binding LoadNextCommand}"
                                         Content="Следующие 10 записей"
                                         Style="{StaticResource BaseButtonStyle}"
                                         Background="{StaticResource DarkBackgroundBrush}"
-                                        Height="40"
-                                        Width="250"
-                                        FontSize="14"/>
+                                        Height="40" Width="250" FontSize="14"/>
                             </Grid>
                         </Border>
                     </Grid>
 
                     <!-- Панель верификатора -->
-                    <Grid x:Name="VerifierPanel" Visibility="Collapsed">
+                    <Grid Visibility="{Binding IsVerifier, Converter={StaticResource BoolToVis}}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Заголовок -->
                         <Border Grid.Row="0"
                                 Background="{StaticResource HeaderGradient}"
-                                CornerRadius="15,15,0,0"
-                                Padding="20">
+                                CornerRadius="15,15,0,0" Padding="20">
                             <TextBlock Text="Неверифицированные видео"
-                                       FontSize="24"
-                                       FontWeight="Bold"
+                                       FontSize="24" FontWeight="Bold"
                                        Foreground="White"/>
                         </Border>
 
-                        <!-- Список видео -->
-                        <Border Grid.Row="1"
-                                Background="Transparent"
-                                Margin="0">
+                        <Border Grid.Row="1" Background="Transparent" Margin="0">
                             <ScrollViewer Style="{StaticResource BaseScrollViewerStyle}"
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled">
-                                <StackPanel x:Name="UnverifiedVideosContainer" 
-                                            Style="{StaticResource ItemsStackPanelStyle}"/>
+                                <ItemsControl ItemsSource="{Binding UnverifiedVideos}" 
+                                              Style="{StaticResource ItemsStackPanelStyle}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <ContentPresenter Content="{Binding}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </ScrollViewer>
                         </Border>
                     </Grid>

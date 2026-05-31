@@ -19,7 +19,7 @@ namespace VideohostingPanel
 
             services.AddWpfApiClient(_url);
             services.AddSingleton<IApiService, ApiService>();
-            services.AddTransient<MainViewModel>();
+            //services.AddTransient<MainViewModel>();
             services.AddTransient<MainWindow>();
             services.AddTransient<LoginWindow>();
 

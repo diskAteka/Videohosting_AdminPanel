@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace VideohostingPanel.Views.Pages
+namespace VideohostingPanel.Views.Elements
 {
     /// <summary>
-    /// Логика взаимодействия для LoginPage.xaml
+    /// Логика взаимодействия для AddItemControl.xaml
     /// </summary>
-    public partial class LoginPage : Page
+    public partial class AddItemControl : UserControl
     {
-        public LoginPage()
+        public AddItemControl()
         {
             InitializeComponent();
         }

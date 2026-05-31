@@ -1,0 +1,57 @@
+﻿<UserControl x:Class="VideohostingPanel.Views.Elements.AddItemControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:VideohostingPanel.Views.Elements"
+             mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/VideohostingPanel;component/Resources/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource DarkTertiaryBrush}"
+            CornerRadius="15" Margin="0,0,0,15"
+            BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1"
+            Cursor="Hand">
+        <Border.InputBindings>
+            <MouseBinding MouseAction="LeftClick" Command="{Binding AddNewRecordCommand}"/>
+        </Border.InputBindings>
+        <Border.RenderTransform>
+            <ScaleTransform ScaleX="1" ScaleY="1"/>
+        </Border.RenderTransform>
+        <Border.Triggers>
+            <EventTrigger RoutedEvent="Border.MouseEnter">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Duration="0:0:0.2"
+                                         Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                         To="1.02"/>
+                        <DoubleAnimation Duration="0:0:0.2"
+                                         Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                         To="1.02"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="Border.MouseLeave">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Duration="0:0:0.2"
+                                         Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                         To="1"/>
+                        <DoubleAnimation Duration="0:0:0.2"
+                                         Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                         To="1"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Border.Triggers>
+        <Grid Margin="15" HorizontalAlignment="Center">
+            <Image Source="/Resources/Images/ic_plus.png" Width="30" Height="30" />
+        </Grid>
+    </Border>
+</UserControl>

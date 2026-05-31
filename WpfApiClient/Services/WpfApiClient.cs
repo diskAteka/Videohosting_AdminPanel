@@ -2,13 +2,8 @@
 using SharedLib.Contracts.Response.Video;
 using SharedLib.Contracts.RezultModels;
 using SharedLib.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using WpfApiClient.Interfaces;
 
 namespace WpfApiClient.Services
