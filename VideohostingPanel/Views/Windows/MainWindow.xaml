@@ -4,15 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VideohostingPanel"
+        xmlns:elements="clr-namespace:VideohostingPanel.Views.Elements"
         Title="Видеохостинг - Панель управления"
         MinWidth="1200"
         MinHeight="800"
         WindowStartupLocation="CenterScreen"
         AllowsTransparency="True"
         Background="Transparent"
-        WindowStyle="None"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}">
-
+        WindowStyle="None">
+    
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -95,7 +95,7 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="20,15">
-                        <TextBlock Text="ВидеоХостинг" 
+                        <TextBlock Text="MyVideo" 
                                   FontSize="20" FontWeight="Bold"
                                   Foreground="{StaticResource PrimaryRedBrush}"/>
                         <TextBlock Text="Admin" 
@@ -295,10 +295,10 @@
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel Style="{StaticResource ItemsStackPanelStyle}">
-                                    <!-- Кнопка "+" (AddItemControl) -->
-                                    <ContentControl Content="{Binding}"
-                                                    Visibility="{Binding IsAddButtonVisible, Converter={StaticResource BoolToVis}}"
-                                                    Template="{StaticResource AddItemControlTemplate}"/>
+
+                                    <!-- Кнопка "+" — всегда первая -->
+                                    <elements:AddItemControl Visibility="{Binding IsAddButtonVisible, 
+                                                            Converter={StaticResource BoolToVis}}"/>
 
                                     <!-- Элементы записей -->
                                     <ItemsControl ItemsSource="{Binding Records}">
@@ -308,6 +308,7 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
+
                                 </StackPanel>
                             </ScrollViewer>
                         </Border>
@@ -368,8 +369,7 @@
                             <ScrollViewer Style="{StaticResource BaseScrollViewerStyle}"
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled">
-                                <ItemsControl ItemsSource="{Binding UnverifiedVideos}" 
-                                              Style="{StaticResource ItemsStackPanelStyle}">
+                                <ItemsControl ItemsSource="{Binding UnverifiedVideos}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <ContentPresenter Content="{Binding}"/>

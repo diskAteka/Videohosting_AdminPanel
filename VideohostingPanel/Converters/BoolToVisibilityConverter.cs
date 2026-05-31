@@ -26,7 +26,6 @@ namespace VideohostingPanel.Converters
         }
     }
 
-    // Инвертированный конвертер (опционально)
     public class InverseBoolToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
