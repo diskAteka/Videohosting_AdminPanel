@@ -9,6 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Images\Clock.png" />
+    <None Remove="Resources\Images\Dislike.png" />
+    <None Remove="Resources\Images\FullScreen.png" />
+    <None Remove="Resources\Images\Like.png" />
+    <None Remove="Resources\Images\View.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Models\" />
   </ItemGroup>
 
@@ -24,6 +32,14 @@
     <Reference Include="SharedLib">
       <HintPath>..\WpfApiClient\Libs\SharedLib.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Images\Clock.png" />
+    <Resource Include="Resources\Images\Dislike.png" />
+    <Resource Include="Resources\Images\FullScreen.png" />
+    <Resource Include="Resources\Images\Like.png" />
+    <Resource Include="Resources\Images\View.png" />
   </ItemGroup>
 
 </Project>

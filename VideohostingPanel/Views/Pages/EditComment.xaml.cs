@@ -1,7 +1,4 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using VideohostingPanel.Classes;
-using VideohostingPanel.Windows;
+﻿using System.Windows.Controls;
 
 namespace VideohostingPanel.Views.Pages
 {
