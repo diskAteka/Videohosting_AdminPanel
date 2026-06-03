@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:converters="clr-namespace:VideohostingPanel.Converters"
       mc:Ignorable="d"
       d:DesignHeight="800" d:DesignWidth="1200"
       Title="VerifyVideoPage"
@@ -14,6 +15,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/VideohostingPanel;component/Resources/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         </ResourceDictionary>
     </Page.Resources>
 
@@ -147,15 +149,15 @@
                             <Border Background="{StaticResource DarkTertiaryBrush}" CornerRadius="15" Padding="20" Margin="0,0,0,20">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
-                                        <Image Source="/Resources/Images/View.png" Width="20" Height="20" Margin="0,0,10,0"/>
+                                        <Image Source="/Resources/Images/ic_view.png" Width="20" Height="20" Margin="0,0,10,0"/>
                                         <TextBlock Text="{Binding Video.Views}" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
-                                        <Image Source="/Resources/Images/Like.png" Width="20" Height="20" Margin="0,0,10,0"/>
+                                        <Image Source="/Resources/Images/ic_like.png" Width="20" Height="20" Margin="0,0,10,0"/>
                                         <TextBlock Text="{Binding Video.Likes}" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal">
-                                        <Image Source="/Resources/Images/Dislike.png" Width="20" Height="20" Margin="0,0,10,0"/>
+                                        <Image Source="/Resources/Images/ic_dislike.png" Width="20" Height="20" Margin="0,0,10,0"/>
                                         <TextBlock Text="{Binding Video.Dislikes}" FontSize="14" Foreground="{StaticResource TextPrimaryBrush}"/>
                                     </StackPanel>
                                 </StackPanel>
@@ -183,14 +185,18 @@
 
                     <!-- Кнопки действий -->
                     <Border Grid.Row="2" Background="{StaticResource DarkTertiaryBrush}" CornerRadius="0,0,20,20" Padding="20">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button Content="ПРИНЯТЬ" Command="{Binding ApproveCommand}"
-                                    Style="{StaticResource ApproveButtonStyle}" Width="150" Height="50" Margin="10"/>
-                            <Button Content="ОТКЛОНИТЬ" Command="{Binding RejectCommand}"
-                                    Style="{StaticResource RejectButtonStyle}" Width="150" Height="50" Margin="10"/>
-                            <Button Content="Закрыть" Command="{Binding CloseCommand}"
-                                    Style="{StaticResource CloseButtonStyle}" Width="100" Height="50" Margin="10"/>
-                        </StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Content="ОТКЛОНИТЬ" Command="{Binding RejectCommand}"
+                                    Style="{StaticResource RejectOutlinedButtonStyle}" Width="250" Height="45" Margin="10"/>
+                            <Button Grid.Column="3" Content="ПРИНЯТЬ" Command="{Binding ApproveCommand}"
+                                    Style="{StaticResource OutlinedButtonStyle}" Width="250" Height="45" Margin="10"/>
+                        </Grid>
                     </Border>
                 </Grid>
             </Border>

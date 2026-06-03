@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:converters="clr-namespace:VideohostingPanel.Converters"
       mc:Ignorable="d"
       d:DesignHeight="800" d:DesignWidth="1200"
       Title="EditUserPage"
@@ -14,6 +15,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/VideohostingPanel;component/Resources/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         </ResourceDictionary>
     </Page.Resources>
 
@@ -62,7 +64,7 @@
                     <Border Grid.Row="0"
                             Background="{StaticResource HeaderGradient}"
                             CornerRadius="20,20,0,0" Height="70">
-                        <TextBlock Text="Редактирование пользователя" FontSize="24" FontWeight="Bold"
+                        <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="Bold"
                                    Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
 
@@ -76,12 +78,20 @@
                                      IsReadOnly="True" Background="{StaticResource DarkBackgroundBrush}" Margin="0,0,0,15"/>
 
                             <!-- Имя пользователя -->
-                            <TextBlock Text="Имя пользователя *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                            <TextBlock Text="Имя (3-50 символов) *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                             <TextBox Text="{Binding User.Name}" Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
 
                             <!-- Email -->
                             <TextBlock Text="Email *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                             <TextBox Text="{Binding User.Email}" Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
+
+                            <!-- Пароль -->
+                            <StackPanel Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}" >
+                                <TextBlock Text="Пароль (6-16 символов) *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                                <PasswordBox Style="{StaticResource BasePasswordBoxStyle}" 
+                                         Margin="0,0,0,15" x:Name="UserPasswordBox"/>
+                            </StackPanel>
+
 
                             <!-- Статусы -->
                             <Grid Margin="0,0,0,15">
@@ -92,11 +102,13 @@
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Статус" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                                     <CheckBox IsChecked="{Binding User.IsActive}" Content="Активен"
+                                              Style="{StaticResource ToggleSwitchStyle}"
                                               Foreground="{StaticResource TextPrimaryBrush}" FontSize="14"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="Права" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,5"/>
                                     <CheckBox IsChecked="{Binding User.CanUpload}" Content="Может загружать"
+                                              Style="{StaticResource ToggleSwitchStyle}"
                                               Foreground="{StaticResource TextPrimaryBrush}" FontSize="14"/>
                                 </StackPanel>
                             </Grid>
@@ -106,16 +118,7 @@
                             <TextBox Text="{Binding User.RegisteredAt, StringFormat=\{0:dd.MM.yyyy HH:mm\}}"
                                      Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
 
-                            <!-- Кнопка сброса пароля -->
-                            <Button Content="Сбросить пароль" Command="{Binding ResetPasswordCommand}"
-                                    Style="{StaticResource BaseButtonStyle}"
-                                    Background="{StaticResource DarkTertiaryBrush}"
-                                    Height="45" Margin="0,0,0,15" HorizontalAlignment="Center" Width="250"/>
-
-                            <!-- Кнопка удалить -->
-                            <Button Content="УДАЛИТЬ ПОЛЬЗОВАТЕЛЯ" Command="{Binding DeleteCommand}"
-                                    Background="#66FF0000" Style="{StaticResource BaseButtonStyle}"
-                                    Height="45" Margin="0,20,0,0" HorizontalAlignment="Center" Width="250"/>
+                            
                         </StackPanel>
                     </ScrollViewer>
 
@@ -124,15 +127,27 @@
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="1" Content="Сохранить" Command="{Binding SaveCommand}"
-                                    Style="{StaticResource BaseButtonStyle}" Width="120" Margin="10"/>
-                            <Button Grid.Column="2" Content="Отмена" Command="{Binding CancelCommand}"
-                                    Style="{StaticResource BaseButtonStyle}" Background="{StaticResource DarkBackgroundBrush}"
-                                    Width="120" Margin="10"/>
+
+                            <!-- Кнопка удалить -->
+                            <Button Grid.Column="0" Content="УДАЛИТЬ ПОЛЬЗОВАТЕЛЯ" Command="{Binding DeleteCommand}"
+                                    Background="#66FF0000" Style="{StaticResource BaseButtonStyle}"
+                                    Height="45" Margin="10" HorizontalAlignment="Center" Width="250"
+                                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            
+                            <!-- Кнопка сброса пароля -->
+                            <Button Grid.Column="2" Content="Сбросить пароль" Command="{Binding ResetPasswordCommand}"
+                                    Style="{StaticResource RejectOutlinedButtonStyle}" 
+                                    Background="{StaticResource DarkTertiaryBrush}"
+                                    Height="45" Margin="10" HorizontalAlignment="Right" Width="250"
+                                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                            <Button Grid.Column="3" Content="Сохранить" Command="{Binding SaveCommand}"
+                                    HorizontalAlignment="Center"
+                                    Style="{StaticResource OutlinedButtonStyle}" Width="250" Margin="10"/>
                         </Grid>
                     </Border>
                 </Grid>

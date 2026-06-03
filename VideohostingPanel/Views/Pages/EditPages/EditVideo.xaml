@@ -168,15 +168,13 @@
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Button Grid.Column="1" Content="Сохранить" Command="{Binding SaveCommand}"
-                                    Style="{StaticResource BaseButtonStyle}" Width="120" Margin="10"/>
-                            <Button Grid.Column="2" Content="Отмена" Command="{Binding CancelCommand}"
-                                    Style="{StaticResource BaseButtonStyle}" Background="{StaticResource DarkBackgroundBrush}"
-                                    Width="120" Margin="10"/>
+                                    Style="{StaticResource OutlinedButtonStyle }" Width="250" Margin="10" Height="45"/>
+                            
                         </Grid>
                     </Border>
                 </Grid>
