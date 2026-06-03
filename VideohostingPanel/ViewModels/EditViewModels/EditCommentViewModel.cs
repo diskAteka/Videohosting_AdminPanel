@@ -78,16 +78,20 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         Date = Comment.Date
                     };//Сформировать запрос на обновление
 
-                    var result = await _apiService.UpdateAsync(Comment.Id, postDto);//Отправить запрос
+                    var response = await _apiService.UpdateAsync(Comment.Id, postDto);//Отправить запрос
 
-                    if (result.Success)
+                    if (response.Success)
                     {
-                        ModernMessageBox.Show("Комментарий обновлён", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ModernMessageBox.Show($"Данные комментария обновлены\nИзмененные таблицы:\n" +
+                            $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
+                            "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                         GoBack();
                     }
                     else
                     {
-                        ModernMessageBox.Show($"Непредвиденная ошибка\nИзменено записей: {result.AffectedTables}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ModernMessageBox.Show($"Непредвиденная ошибка\nИзмененные таблицы:\n" +
+                            $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
+                            "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
                 else//Если включен режим создания нового объекта
@@ -100,22 +104,26 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         Date = DateTime.Now
                     };//СФормировать запрос на создание
 
-                    var result = await _apiService.AddAsync(postDto);//Отправить запрос
+                    var response = await _apiService.AddAsync(postDto);//Отправить запрос
 
-                    if (result.Success)
+                    if (response.Success)
                     {
-                        ModernMessageBox.Show("Комментарий создан", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ModernMessageBox.Show($"Комментарий создан\nИзмененные таблицы:\n" +
+                            $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
+                            "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                         GoBack();
                     }
                     else
                     {
-                        ModernMessageBox.Show($"Непредвиденная ошибка\nИзменено записей: {result.AffectedTables}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ModernMessageBox.Show($"Ошибка сервера\nИзмененные таблицы:\n" +
+                            $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
+                            "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }
             catch (Exception ex)
             {
-                ModernMessageBox.Show($"Произошла ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                ModernMessageBox.Show($"Внутренняя ошибка программы: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -124,10 +132,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         }
 
         [RelayCommand]
-        private void Cancel()
-        {
-            GoBack();
-        }
+        private void Cancel() => GoBack();
 
         [RelayCommand]
         private async Task DeleteAsync()
@@ -149,17 +154,17 @@ namespace VideohostingPanel.ViewModels.EditViewModels
 
                 if (deleteResult.Success)
                 {
-                    MessageBox.Show($"Комментарий удалён\nИзменено записей: {deleteResult.AffectedTables}", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    ModernMessageBox.Show($"Комментарий удалён\nИзменено записей: {deleteResult.AffectedTables}", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                     GoBack();
                 }
                 else
                 {
-                    MessageBox.Show($"Непредвиденная ошибка\nИзменено записей: {deleteResult.AffectedTables}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ModernMessageBox.Show($"Непредвиденная ошибка\nИзменено записей: {deleteResult.AffectedTables}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Произошла ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                ModernMessageBox.Show($"Произошла ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -273,7 +278,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                     Text = comment.Text,
                     Date = comment.Date
                 };
-                Title = $"Редактирование комментария #{comment.Id}";
+                Title = $"Редактирование комментария";
             }
             else
             {

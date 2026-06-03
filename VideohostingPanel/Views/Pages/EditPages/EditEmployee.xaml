@@ -65,7 +65,7 @@
                     <Border Grid.Row="0"
                             Background="{StaticResource HeaderGradient}"
                             CornerRadius="20,20,0,0" Height="70">
-                        <TextBlock Text="Редактирование сотрудника" FontSize="24" FontWeight="Bold"
+                        <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="Bold"
                                    Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
 
@@ -91,7 +91,8 @@
                             <!-- Роль -->
                             <TextBlock Text="Роль *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                             <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding SelectedRole}"
-                                      Style="{StaticResource BaseComboBoxStyle}" Margin="0,0,0,15"/>
+                                      DisplayMemberPath="DisplayName"
+                                      Style="{StaticResource BaseComboBoxStyle}" Margin="0,0,0,15"/>    
 
                             <!-- Кнопка удалить-->
                             <Button Content="УДАЛИТЬ СОТРУДНИКА" 
