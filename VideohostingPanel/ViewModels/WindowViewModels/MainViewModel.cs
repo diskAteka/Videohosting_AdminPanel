@@ -1,7 +1,7 @@
 ﻿using VideohostingPanel.Services;
 using VideohostingPanel.ViewModels.Base;
 
-namespace VideohostingPanel.ViewModels
+namespace VideohostingPanel.ViewModels.WindowViewModels
 {
     public partial class MainViewModel : BaseViewModel
     {
@@ -19,5 +19,7 @@ namespace VideohostingPanel.ViewModels
             _apiService = apiService;
             Title = "Панель администратора";
         }
+
+
     }
 }

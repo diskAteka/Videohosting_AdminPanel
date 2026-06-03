@@ -1,0 +1,358 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using SharedLib.Contracts.Admin;
+using System.Collections.ObjectModel;
+using System.Windows;
+using VideohostingPanel.Resources.Elements;
+using VideohostingPanel.Services;
+using VideohostingPanel.ViewModels.Base;
+
+namespace VideohostingPanel.ViewModels.EditViewModels
+{
+    public partial class EditCommentViewModel : BaseViewModel
+    {
+        private readonly ApiService _apiService;
+        private readonly CommentDto? _originalComment;
+
+        #region Свойства для формы
+        [ObservableProperty]
+        private bool _isEditMode;
+
+        [ObservableProperty]
+        private CommentDto _comment;
+
+        [ObservableProperty]
+        private ObservableCollection<ComboBoxItem> _videos = new();
+
+        [ObservableProperty]
+        private ComboBoxItem? _selectedVideo;
+
+        [ObservableProperty]
+        private string _videoSearchId = string.Empty;
+
+        [ObservableProperty]
+        private ObservableCollection<ComboBoxItem> _users = new();
+
+        [ObservableProperty]
+        private ComboBoxItem? _selectedUser;
+
+        [ObservableProperty]
+        private string _userSearchId = string.Empty;
+
+        #endregion
+
+        #region Команды
+
+        [RelayCommand]
+        private async Task SaveAsync()
+        {
+            try
+            {
+                IsBusy = true; 
+                if (SelectedVideo == null)
+                {
+                    ModernMessageBox.Show("Выберите видео", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                if (SelectedUser == null)
+                {
+                    ModernMessageBox.Show("Выберите пользователя", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                if (string.IsNullOrWhiteSpace(Comment.Text))
+                {
+                    ModernMessageBox.Show("Введите текст комментария", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                Comment.VideoId = SelectedVideo.Id;
+                Comment.UserId = SelectedUser.Id;
+
+                if (IsEditMode)//Если включен режим редактирования
+                {
+                    var postDto = new PostCommentDto
+                    {
+                        VideoId = Comment.VideoId,
+                        UserId = Comment.UserId,
+                        Text = Comment.Text,
+                        Date = Comment.Date
+                    };//Сформировать запрос на обновление
+
+                    var result = await _apiService.UpdateAsync(Comment.Id, postDto);//Отправить запрос
+
+                    if (result.Success)
+                    {
+                        ModernMessageBox.Show("Комментарий обновлён", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        GoBack();
+                    }
+                    else
+                    {
+                        ModernMessageBox.Show($"Непредвиденная ошибка\nИзменено записей: {result.AffectedTables}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else//Если включен режим создания нового объекта
+                {
+                    var postDto = new PostCommentDto
+                    {
+                        VideoId = Comment.VideoId,
+                        UserId = Comment.UserId,
+                        Text = Comment.Text,
+                        Date = DateTime.Now
+                    };//СФормировать запрос на создание
+
+                    var result = await _apiService.AddAsync(postDto);//Отправить запрос
+
+                    if (result.Success)
+                    {
+                        ModernMessageBox.Show("Комментарий создан", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        GoBack();
+                    }
+                    else
+                    {
+                        ModernMessageBox.Show($"Непредвиденная ошибка\nИзменено записей: {result.AffectedTables}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ModernMessageBox.Show($"Произошла ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        [RelayCommand]
+        private void Cancel()
+        {
+            GoBack();
+        }
+
+        [RelayCommand]
+        private async Task DeleteAsync()
+        {
+            if (IsEditMode) return;
+
+            var result = ModernMessageBox.Show(
+                "Вы уверены? Это действие необратимо",
+                "Подтверждение удаления",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes) return;
+
+            try
+            {
+                IsBusy = true;
+                var deleteResult = await _apiService.DeleteAsync<CommentDto>(Comment.Id);
+
+                if (deleteResult.Success)
+                {
+                    MessageBox.Show($"Комментарий удалён\nИзменено записей: {deleteResult.AffectedTables}", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    GoBack();
+                }
+                else
+                {
+                    MessageBox.Show($"Непредвиденная ошибка\nИзменено записей: {deleteResult.AffectedTables}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Произошла ошибка: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task SearchVideoByIdAsync()
+        {
+            if (!int.TryParse(VideoSearchId, out int id))
+            {
+                MessageBox.Show("Введите корректный ID видео", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                IsBusy = true;
+                var video = await _apiService.GetByIdAsync<VideoDto>(id);
+
+                if (video != null)
+                {
+                    var item = Videos.FirstOrDefault(v => v.Id == video.Id);
+                    if (item != null)
+                    {
+                        SelectedVideo = item;
+                    }
+                    else
+                    {
+                        ModernMessageBox.Show("Видео не найдено в списке", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ModernMessageBox.Show($"Видео не найдено: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task SearchUserByIdAsync()
+        {
+            if (!int.TryParse(UserSearchId, out int id))
+            {
+                MessageBox.Show("Введите корректный ID пользователя", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                IsBusy = true;
+                var user = await _apiService.GetByIdAsync<UserDto>(id);
+
+                if (user != null)
+                {
+                    var item = Users.FirstOrDefault(u => u.Id == user.Id);
+                    if (item != null)
+                    {
+                        SelectedUser = item;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Пользователь не найден в списке", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Пользователь не найден: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        [RelayCommand]
+        private void GoBack()
+        {
+            OnGoBackRequested?.Invoke();
+        }
+
+        #endregion
+
+        #region Навигация
+
+        public event Action? OnGoBackRequested;
+
+        #endregion
+
+        #region Конструктор
+
+        public EditCommentViewModel(ApiService apiService, CommentDto? comment = null)
+        {
+            _apiService = apiService;
+            _originalComment = comment;
+            _isEditMode = comment != null;
+
+            if (_isEditMode && comment != null)
+            {
+                _comment = new CommentDto
+                {
+                    Id = comment.Id,
+                    VideoId = comment.VideoId,
+                    UserId = comment.UserId,
+                    Text = comment.Text,
+                    Date = comment.Date
+                };
+                Title = $"Редактирование комментария #{comment.Id}";
+            }
+            else
+            {
+                _comment = new CommentDto
+                {
+                    Date = DateTime.Now
+                };
+                Title = "Создание комментария";
+            }
+
+            _ = LoadDropdownDataAsync();
+        }
+
+        #endregion
+
+        #region Методы загрузки данных
+
+        private async Task LoadDropdownDataAsync()
+        {
+            try
+            {
+                IsBusy = true;
+                await Task.WhenAll(LoadVideosAsync(), LoadUsersAsync());
+
+                // Устанавливаем выбранные элементы для режима редактирования
+                if (IsEditMode && _originalComment != null)
+                {
+                    SelectedVideo = Videos.FirstOrDefault(v => v.Id == _originalComment.VideoId);
+                    SelectedUser = Users.FirstOrDefault(u => u.Id == _originalComment.UserId);
+                }
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        private async Task LoadVideosAsync()
+        {
+            try
+            {
+                var videos = await _apiService.GetListAsync<VideoDto>(page: 1, pageSize: 1000);
+                Videos.Clear();
+                foreach (var video in videos)
+                {
+                    Videos.Add(new ComboBoxItem
+                    {
+                        Id = video.Id,
+                        DisplayName = $"{video.Name} (ID: {video.Id})"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки видео: {ex.Message}");
+            }
+        }
+
+        private async Task LoadUsersAsync()
+        {
+            try
+            {
+                var users = await _apiService.GetListAsync<UserDto>(page: 1, pageSize: 1000);
+                Users.Clear();
+                foreach (var user in users)
+                {
+                    Users.Add(new ComboBoxItem
+                    {
+                        Id = user.Id,
+                        DisplayName = $"{user.Name} (ID: {user.Id})"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки пользователей: {ex.Message}");
+            }
+        }
+
+        #endregion
+    }
+}

@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Input;
 using VideohostingPanel.Interfaces;
-using VideohostingPanel.ViewModels;
+using VideohostingPanel.ViewModels.WindowViewModels;
 
 namespace VideohostingPanel.Views.Windows
 {

@@ -1,12 +1,13 @@
-﻿<Page x:Class="VideohostingPanel.Views.Pages.AddComment"
+﻿<Page x:Class="VideohostingPanel.Views.Pages.AddPages.AddEmployee"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      mc:Ignorable="d"
       xmlns:converters="clr-namespace:VideohostingPanel.Converters"
+      xmlns:local="clr-namespace:VideohostingPanel"
+      mc:Ignorable="d"
       d:DesignHeight="800" d:DesignWidth="1200"
-      Title="AddCommentPage"
+      Title="AddEmployeePage"
       MinWidth="1200" MinHeight="800"
       Background="Transparent">
 
@@ -66,7 +67,7 @@
                     <Border Grid.Row="0"
                             Background="{StaticResource HeaderGradient}"
                             CornerRadius="20,20,0,0" Height="70">
-                        <TextBlock Text="Добавление комментария" FontSize="24" FontWeight="Bold"
+                        <TextBlock Text="Добавление сотрудника" FontSize="24" FontWeight="Bold"
                                    Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
 
@@ -74,25 +75,21 @@
                     <ScrollViewer Grid.Row="1" Style="{StaticResource BaseScrollViewerStyle}"
                                   VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <StackPanel Margin="20">
-                            <!-- ID пользователя -->
-                            <TextBlock Text="ID пользователя *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Comment.UserId, UpdateSourceTrigger=PropertyChanged}" 
+                            <!-- Имя пользователя -->
+                            <TextBlock Text="Имя пользователя *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                            <TextBox Text="{Binding Employee.UserName, UpdateSourceTrigger=PropertyChanged}" 
                                      Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
 
-                            <!-- ID видео -->
-                            <TextBlock Text="ID видео *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Comment.VideoId, UpdateSourceTrigger=PropertyChanged}" 
-                                     Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
+                            <!-- Пароль -->
+                            <TextBlock Text="Пароль *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                            <PasswordBox Style="{StaticResource BasePasswordBoxStyle}" 
+                                         Margin="0,0,0,15" x:Name="EmployeePasswordBox"/>
 
-                            <!-- Текст комментария -->
-                            <TextBlock Text="Текст комментария *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Comment.Text, UpdateSourceTrigger=PropertyChanged}" 
-                                     Style="{StaticResource BaseTextBoxStyle}" 
-                                     Height="150" 
-                                     TextWrapping="Wrap" 
-                                     AcceptsReturn="True"
-                                     VerticalScrollBarVisibility="Auto"
-                                     Margin="0,0,0,15"/>
+                            <!-- Роль -->
+                            <TextBlock Text="Роль *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                            <ComboBox ItemsSource="{Binding Roles}" 
+                                      SelectedItem="{Binding SelectedRole}"
+                                      Style="{StaticResource BaseComboBoxStyle}" Margin="0,0,0,15"/>
                         </StackPanel>
                     </ScrollViewer>
 
@@ -105,7 +102,7 @@
                             Visibility="{Binding IsNotificationVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                         <Border.Triggers>
                             <EventTrigger RoutedEvent="Border.Loaded">
-                                <BeginStoryboard>
+                                <BeginStoryboard Name="NotificationStoryboard">
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.3"/>
                                     </Storyboard>
@@ -132,10 +129,11 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Button Grid.Column="1" Content="СОЗДАТЬ ЗАПИСЬ" 
-                                    Command="{Binding CreateCommentCommand}"
+                                    Command="{Binding CreateEmployeeCommand}"
+                                    CommandParameter="{Binding ElementName=EmployeePasswordBox}"
                                     Style="{StaticResource BaseButtonStyle}" Width="200" Margin="10" Height="50"/>
-                            <Button Grid.Column="2" Content="НАЗАД" 
-                                    Command="{Binding GoBackCommand}"
+                            <Button Grid.Column="2" Content="ОТМЕНА" 
+                                    Command="{Binding CancelCommand}"
                                     Style="{StaticResource BaseButtonStyle}" Background="{StaticResource DarkBackgroundBrush}" Width="120" Margin="10"/>
                         </Grid>
                     </Border>

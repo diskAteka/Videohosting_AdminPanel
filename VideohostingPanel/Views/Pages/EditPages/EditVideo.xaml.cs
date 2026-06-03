@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace VideohostingPanel.Views.Pages
+namespace VideohostingPanel.Views.Pages.EditPages
 {
     public partial class EditVideo : Page
     {

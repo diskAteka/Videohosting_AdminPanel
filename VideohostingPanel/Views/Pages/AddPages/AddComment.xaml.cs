@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace VideohostingPanel.Views.Pages
+namespace VideohostingPanel.Views.Pages.AddPages
 {
     /// <summary>
-    /// Логика взаимодействия для AddUser.xaml
+    /// Логика взаимодействия для AddComment.xaml
     /// </summary>
-    public partial class AddUser : Page
+    public partial class AddComment : Page
     {
-        public AddUser()
+        public AddComment()
         {
             InitializeComponent();
         }

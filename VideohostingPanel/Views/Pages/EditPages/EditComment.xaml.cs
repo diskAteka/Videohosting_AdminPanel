@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace VideohostingPanel.Views.Pages
+namespace VideohostingPanel.Views.Pages.EditPages
 {
     public partial class EditComment : Page
     {
@@ -9,7 +9,5 @@ namespace VideohostingPanel.Views.Pages
             InitializeComponent();
         }
 
-
-     
     }
 }
