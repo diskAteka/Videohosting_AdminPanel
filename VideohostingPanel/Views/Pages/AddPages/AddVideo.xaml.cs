@@ -8,5 +8,6 @@ namespace VideohostingPanel.Views.Pages.AddPages
         {
             InitializeComponent();
         }
+
     }
 }

@@ -13,14 +13,17 @@
     <None Remove="Resources\Images\ic_arrow_back.png" />
     <None Remove="Resources\Images\ic_arrow_down.png" />
     <None Remove="Resources\Images\ic_arrow_up.png" />
+    <None Remove="Resources\Images\ic_calendar.png" />
     <None Remove="Resources\Images\ic_close.png" />
     <None Remove="Resources\Images\ic_error.png" />
     <None Remove="Resources\Images\ic_info.png" />
     <None Remove="Resources\Images\ic_key.png" />
     <None Remove="Resources\Images\ic_lock.png" />
+    <None Remove="Resources\Images\ic_next.png" />
     <None Remove="Resources\Images\ic_plus.png" />
+    <None Remove="Resources\Images\ic_previous.png" />
     <None Remove="Resources\Images\ic_question.png" />
-    <None Remove="Resources\Images\ic_reset_password.png" />
+    <None Remove="Resources\Images\ic_upload.png" />
     <None Remove="Resources\Images\ic_upload_poster.png" />
     <None Remove="Resources\Images\ic_upload_video.png" />
     <None Remove="Resources\Images\ic_warning.png" />
@@ -45,6 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Resources\Images\ic_calendar.png" />
     <Resource Include="Resources\Images\ic_clock.png" />
     <Resource Include="Resources\Images\ic_close.png" />
     <Resource Include="Resources\Images\ic_dislike.png" />
@@ -56,11 +60,13 @@
     <Resource Include="Resources\Images\ic_info.png" />
     <Resource Include="Resources\Images\ic_key.png" />
     <Resource Include="Resources\Images\ic_lock.png" />
+    <Resource Include="Resources\Images\ic_next.png" />
     <Resource Include="Resources\Images\ic_plus.png" />
     <Resource Include="Resources\Images\ic_like.png" />
     <Resource Include="Resources\Images\ic_person.png" />
+    <Resource Include="Resources\Images\ic_previous.png" />
     <Resource Include="Resources\Images\ic_question.png" />
-    <Resource Include="Resources\Images\ic_reset_password.png" />
+    <Resource Include="Resources\Images\ic_upload.png" />
     <Resource Include="Resources\Images\ic_upload_poster.png" />
     <Resource Include="Resources\Images\ic_upload_video.png" />
     <Resource Include="Resources\Images\ic_view.png" />

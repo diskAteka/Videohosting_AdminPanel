@@ -890,7 +890,356 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
+    <!-- Стиль для DatePickerTextBox -->
+    <Style TargetType="DatePickerTextBox">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DatePickerTextBox">
+                    <Border Background="{TemplateBinding Background}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <ScrollViewer x:Name="PART_ContentHost" 
+                                  VerticalAlignment="Center"
+                                  Margin="15,0,0,0"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Cursor" Value="IBeam"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Стиль для DatePicker -->
+    <Style x:Key="BaseDatePickerStyle" TargetType="DatePicker">
+        <Setter Property="Background" Value="{StaticResource DarkSecondaryBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource DarkTertiaryBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Height" Value="45"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DatePicker">
+                    <Border x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="14">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Текст выбранной даты -->
+                            <DatePickerTextBox x:Name="PART_TextBox"
+                                          Grid.Column="0"
+                                          Background="Transparent"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          FontSize="{TemplateBinding FontSize}"
+                                          VerticalContentAlignment="Center"
+                                          HorizontalContentAlignment="Left"
+                                          BorderThickness="0"/>
+
+                            <!-- Кнопка календаря -->
+                            <Button x:Name="PART_Button"
+                                Grid.Column="1"
+                                Width="40"
+                                Height="35"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Margin="0,0,5,0"
+                                VerticalAlignment="Center"
+                                IsTabStop="False">
+                                <Button.Content>
+                                    <!-- Слот для иконки календаря -->
+                                    <Image Source="/Resources/Images/ic_calendar.png"
+                                       Width="18"
+                                       Height="18"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"/>
+                                </Button.Content>
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}"
+                                            CornerRadius="8">
+                                            <ContentPresenter HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#15FF0000"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- При наведении мыши -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryRedBrush}"/>
+                        </Trigger>
+
+                        <!-- При фокусе -->
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryRedBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Стиль для Calendar (выпадающий календарь) -->
+    <Style TargetType="Calendar">
+        <Setter Property="Background" Value="{StaticResource DarkSecondaryBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource DarkTertiaryBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Calendar">
+                    <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="14"
+                        Padding="10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Заголовок с навигацией -->
+                            <Grid Grid.Row="0" Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Кнопка предыдущего месяца -->
+                                <Button x:Name="PART_PreviousButton"
+                                    Grid.Column="0"
+                                    Width="30"
+                                    Height="30"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    Foreground="{StaticResource TextSecondaryBrush}"
+                                    IsTabStop="False">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="8">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#15FF0000"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <Button.Content>
+                                        <Image Source="/Resources/Images/ic_previous.png"
+                                           Width="14"
+                                           Height="14"/>
+                                    </Button.Content>
+                                </Button>
+
+                                <!-- Заголовок месяца/года -->
+                                <Button x:Name="PART_HeaderButton"
+                                    Grid.Column="1"
+                                    Background="Transparent"
+                                    Foreground="{StaticResource TextPrimaryBrush}"
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    HorizontalAlignment="Center"
+                                    Cursor="Hand"
+                                    IsTabStop="False">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="8"
+                                                Padding="10,5">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#15FF0000"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+
+                                <!-- Кнопка следующего месяца -->
+                                <Button x:Name="PART_NextButton"
+                                    Grid.Column="2"
+                                    Width="30"
+                                    Height="30"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    Foreground="{StaticResource TextSecondaryBrush}"
+                                    IsTabStop="False">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}"
+                                                CornerRadius="8">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#15FF0000"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                    <Button.Content>
+                                        <Image Source="/Resources/Images/ic_next.png"
+                                           Width="14"
+                                           Height="14"/>
+                                    </Button.Content>
+                                </Button>
+                            </Grid>
+
+                            <!-- Сетка дней -->
+                            <Grid Grid.Row="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Дни недели -->
+                                <Grid Grid.Row="0" Margin="0,0,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="Пн" HorizontalAlignment="Center" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.7"/>
+                                    <TextBlock Grid.Column="1" Text="Вт" HorizontalAlignment="Center" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.7"/>
+                                    <TextBlock Grid.Column="2" Text="Ср" HorizontalAlignment="Center" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.7"/>
+                                    <TextBlock Grid.Column="3" Text="Чт" HorizontalAlignment="Center" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.7"/>
+                                    <TextBlock Grid.Column="4" Text="Пт" HorizontalAlignment="Center" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" Opacity="0.7"/>
+                                    <TextBlock Grid.Column="5" Text="Сб" HorizontalAlignment="Center" FontSize="12" Foreground="#FF6666" Opacity="0.7"/>
+                                    <TextBlock Grid.Column="6" Text="Вс" HorizontalAlignment="Center" FontSize="12" Foreground="#FF6666" Opacity="0.7"/>
+                                </Grid>
+
+                                <!-- Дни месяца -->
+                                <Grid Grid.Row="1" x:Name="PART_MonthView"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Стиль для CalendarDayButton (дни в календаре) -->
+    <Style TargetType="CalendarDayButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Width" Value="35"/>
+        <Setter Property="Height" Value="35"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CalendarDayButton">
+                    <Border x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="8">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Сегодняшний день -->
+                        <Trigger Property="IsToday" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource PrimaryRedBrush}"/>
+                            <Setter TargetName="border" Property="BorderThickness" Value="1"/>
+                        </Trigger>
+
+                        <!-- Выбранный день -->
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource PrimaryRedBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+
+                        <!-- Наведение мыши -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#15FF0000"/>
+                        </Trigger>
+
+                        <!-- Неактивные дни (другие месяцы) -->
+                        <Trigger Property="IsInactive" Value="True">
+                            <Setter Property="Foreground" Value="#555555"/>
+                        </Trigger>
+
+                        <!-- День заблокирован (IsBlackedOut) -->
+                        <Trigger Property="IsBlackedOut" Value="True">
+                            <Setter Property="Foreground" Value="#333333"/>
+                            <Setter Property="IsEnabled" Value="False"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Стиль для CalendarButton (кнопки месяца/года) -->
+    <Style TargetType="CalendarButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CalendarButton">
+                    <Border x:Name="border"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="8">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#15FF0000"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#25FF0000"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
     <!--#endregion-->
     
 </ResourceDictionary>

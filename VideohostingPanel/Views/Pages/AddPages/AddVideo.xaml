@@ -74,55 +74,72 @@
                     <ScrollViewer Grid.Row="1" Style="{StaticResource BaseScrollViewerStyle}"
                                   VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <StackPanel Margin="20">
-                            <!-- Зона загрузки видео -->
-                            <TextBlock Text="Видеофайл *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBlock Text="Поддерживаемый формат: .mp3. Максимальный размер: 2 ГБ." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,10"/>
-                            <Border Background="{StaticResource DarkTertiaryBrush}" 
-                                    BorderBrush="{StaticResource PrimaryPurpleBrush}" 
-                                    BorderThickness="2" 
-                                    CornerRadius="14" 
-                                    Height="100" 
-                                    Cursor="Hand"
-                                    Margin="0,0,0,15">
-                                <Border.InputBindings>
-                                    <MouseBinding MouseAction="LeftClick" Command="{Binding BrowseVideoFileCommand}"/>
-                                </Border.InputBindings>
-                                <Grid>
-                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                        <Image Source="/Resources/Images/ic_upload_video.png" Width="60" Height="50" Margin="0,0,0,5" />
-                                        <TextBlock Text="{Binding VideoFileName, TargetNullValue='Перетащите файл или кликните для выбора'}" 
-                                                   Foreground="{StaticResource TextSecondaryBrush}" 
-                                                   FontSize="12" 
-                                                   HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
+                            
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Зона загрузки постера -->
+                                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                    <TextBlock Text="Постер" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                                    <TextBlock Text="Поддерживаемые форматы: .jpg, .png." 
+                                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,10"/>
+                                    <Border Background="{StaticResource DarkTertiaryBrush}" 
+                                            BorderBrush="{StaticResource PrimaryPurpleBrush}" 
+                                            BorderThickness="2" 
+                                            CornerRadius="14" 
+                                            Height="100" 
+                                            Cursor="Hand"
+                                            Margin="0,0,0,15">
+                                        <Border.InputBindings>
+                                            <MouseBinding MouseAction="LeftClick" Command="{Binding BrowsePosterFileCommand}"/>
+                                        </Border.InputBindings>
+                                        <Grid>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <Image Source="/Resources/Images/ic_upload.png" Width="40" Height="40" Margin="0,0,0,5"
+                                                        Visibility="{Binding PosterIsSelected, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                <TextBlock Text="{Binding PosterFileName, TargetNullValue='Перетащите файл или кликните для выбора'}" 
+                                                           Foreground="{StaticResource TextSecondaryBrush}" 
+                                                           FontSize="12" 
+                                                           HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
 
-                            <!-- Зона загрузки постера -->
-                            <TextBlock Text="Постер" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBlock Text="Поддерживаемые форматы: .jpg, .png." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,10"/>
-                            <Border Background="{StaticResource DarkTertiaryBrush}" 
-                                    BorderBrush="{StaticResource PrimaryPurpleBrush}" 
-                                    BorderThickness="2" 
-                                    CornerRadius="14" 
-                                    Height="100" 
-                                    Cursor="Hand"
-                                    Margin="0,0,0,15">
-                                <Border.InputBindings>
-                                    <MouseBinding MouseAction="LeftClick" Command="{Binding BrowsePosterFileCommand}"/>
-                                </Border.InputBindings>
-                                <Grid>
-                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                        <Image Source="/Resources/Images/ic_upload_poster.png" Width="30" Height="30" Margin="0,0,0,5"/>
-                                        <TextBlock Text="{Binding PosterFileName, TargetNullValue='Перетащите файл или кликните для выбора'}" 
-                                                   Foreground="{StaticResource TextSecondaryBrush}" 
-                                                   FontSize="12" 
-                                                   HorizontalAlignment="Center"/>
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
+                                </StackPanel>
+                                
+                                
+                                <!-- Зона загрузки видео -->
+                                <StackPanel Grid.Column="2" Margin="10,0,0,0">
+                                    <TextBlock Text="Видеофайл *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                                    <TextBlock Text="Поддерживаемый формат: .mp3. Максимальный размер: 2 ГБ." 
+                                                Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,10"/>
+                                    <Border Background="{StaticResource DarkTertiaryBrush}" 
+                                             BorderBrush="{StaticResource PrimaryPurpleBrush}" 
+                                             BorderThickness="2" 
+                                             CornerRadius="14" 
+                                             Height="100" 
+                                             Cursor="Hand"
+                                             Margin="0,0,0,15">
+                                        <Border.InputBindings>
+                                            <MouseBinding MouseAction="LeftClick" Command="{Binding BrowseVideoFileCommand}"/>
+                                        </Border.InputBindings>
+                                        <Grid>
+                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                <Image Source="/Resources/Images/ic_upload.png" Width="40" Height="40" Margin="0,0,0,5" 
+                                                        Visibility="{Binding VideoIsSelected, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                <TextBlock Text="{Binding VideoFileName, TargetNullValue='Перетащите файл или кликните для выбора'}" 
+                                                            Foreground="{StaticResource TextSecondaryBrush}" 
+                                                            FontSize="12" 
+                                                            HorizontalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
 
                             <!-- Название -->
                             <TextBlock Text="Название видео *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
@@ -138,34 +155,102 @@
                                      AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto"
                                      Margin="0,0,0,15"/>
+
+                            <!-- Автор -->
+                            <TextBlock Text="Автор (ID)" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ComboBox Grid.Column="0"
+                                          ItemsSource="{Binding Authors}" SelectedItem="{Binding SelectedAuthor}"
+                                          DisplayMemberPath="DisplayName"
+                                          Style="{StaticResource BaseComboBoxStyle}" Margin="0,0,10,0"/>
+                                <Border Grid.Column="1" Background="{StaticResource DarkBackgroundBrush}"
+                                        CornerRadius="14" BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="ID:" FontSize="14"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   VerticalAlignment="Center" Margin="10,0,5,0"/>
+                                        <TextBox Grid.Column="1" Text="{Binding AuthorSearchId}"
+                                                 Background="Transparent" BorderThickness="0"
+                                                 Foreground="{StaticResource TextPrimaryBrush}" FontSize="14"
+                                                 VerticalAlignment="Center" Padding="5,0" MaxLength="10"/>
+                                        <Button Grid.Column="2" Content="Найти" Command="{Binding SearchAuthorByIdCommand}"
+                                                Style="{StaticResource BaseButtonStyle}" Height="35" Width="60"
+                                                Margin="0,0,5,0" FontSize="11"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <!-- Статус верификации -->
+                                    <TextBlock Text="Статус верификации" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                                    <ComboBox ItemsSource="{Binding VerificationStatuses}" Width="200" HorizontalAlignment="Left"
+                                      SelectedItem="{Binding SelectedVerificationStatus}"
+                                      Style="{StaticResource BaseComboBoxStyle}" Margin="0,0,0,15"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <!-- Дата загрузки -->
+                                    <TextBlock Text="Дата загрузки" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                                    <Grid Margin="0,0,0,15">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <DatePicker Grid.Column="0" 
+                                                    SelectedDate="{Binding SelectedUploadDate}"
+                                                    Style="{StaticResource BaseDatePickerStyle}"
+                                                    Margin="0,0,0,0"/>
+                                            <TextBlock Grid.Column="1" 
+                                                       Text="{Binding SelectedUploadDate, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="10,0,0,0"
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       FontSize="12"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
+                            
+
+
+                           
+
+                            <!-- Статистика -->
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Просмотры" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    <TextBox Text="{Binding Video.Views}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Margin="0,5,5,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Лайки" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    <TextBox Text="{Binding Video.Likes}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Margin="5,5,5,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Дизлайки" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    <TextBox Text="{Binding Video.Dislikes}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Margin="5,5,0,0"/>
+                                </StackPanel>
+                            </Grid>
                         </StackPanel>
                     </ScrollViewer>
-
-                    <!-- Панель уведомлений -->
-                    <Border Grid.Row="2" x:Name="NotificationPanel" 
-                            Background="#2A2A2A" 
-                            CornerRadius="10" 
-                            Margin="20,0,20,15" 
-                            Padding="15,10"
-                            Visibility="{Binding IsNotificationVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <Border.Triggers>
-                            <EventTrigger RoutedEvent="Border.Loaded">
-                                <BeginStoryboard>
-                                    <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.3"/>
-                                    </Storyboard>
-                                </BeginStoryboard>
-                            </EventTrigger>
-                        </Border.Triggers>
-                        <StackPanel Orientation="Horizontal">
-                            <Image x:Name="NotificationIcon" Source="/Resources/Images/ic_warning.png" Width="20" Height="20" Margin="0,0,10,0"/>
-                            <TextBlock x:Name="NotificationText" 
-                                       Text="{Binding NotificationMessage}" 
-                                       Foreground="{Binding NotificationColor}" 
-                                       VerticalAlignment="Center" 
-                                       FontWeight="Bold"/>
-                        </StackPanel>
-                    </Border>
 
                     <!-- Кнопки действий -->
                     <Border Grid.Row="3" Background="{StaticResource DarkTertiaryBrush}" CornerRadius="0,0,20,20" Padding="20">
@@ -178,12 +263,11 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Кнопка удалить -->
-                            <Button Grid.Column="0" Content="УДАЛИТЬ ВИДЕО" Command="{Binding DeleteCommand}"
+                            <Button Grid.Column="0" Content="Удалить запись" Command="{Binding DeleteCommand}"
                                     Background="#66FF0000" Style="{StaticResource BaseButtonStyle}"
-                                    Height="45" Margin="10" HorizontalAlignment="Center" Width="250"
-                                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    Height="45" Margin="10" HorizontalAlignment="Left" Width="150"/>
                             
-                            <Button Grid.Column="3" Content="Создать запись" 
+                            <Button Grid.Column="3" Content="Создать запись" HorizontalAlignment="Right"
                                     Command="{Binding CreateVideoCommand}"
                                     Style="{StaticResource OutlinedButtonStyle}" Width="250" Margin="10" Height="45"/>
                         </Grid>
