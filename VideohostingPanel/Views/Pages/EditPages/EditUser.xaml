@@ -4,6 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:converters="clr-namespace:VideohostingPanel.Converters"
+      xmlns:services="clr-namespace:VideohostingPanel.Services"
       mc:Ignorable="d"
       d:DesignHeight="800" d:DesignWidth="1200"
       Title="EditUserPage"
@@ -88,8 +89,8 @@
                             <!-- Пароль -->
                             <StackPanel Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}" >
                                 <TextBlock Text="Пароль (6-16 символов) *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                                <PasswordBox Style="{StaticResource BasePasswordBoxStyle}" 
-                                         Margin="0,0,0,15" x:Name="UserPasswordBox"/>
+                                <PasswordBox Style="{StaticResource BasePasswordBoxStyle}" Margin="0,0,0,15"                                            
+                                             services:PasswordBoxHelper.BindPassword="{Binding Password}"/>
                             </StackPanel>
 
 

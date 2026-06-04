@@ -15,14 +15,25 @@ namespace WpfApiClient.Services
 
         private static readonly Dictionary<Type, string> EntityEndpoints = new()
         {
+            // Для GET списков и GetById - используются Response/DTO классы
+            { typeof(GetVideoResponse), "video" },
+            { typeof(GetUserResponse), "user" },
+            { typeof(GetCommentResponse), "comment" },
+            { typeof(GetLikeResponse), "like" },
+            { typeof(GetDislikeResponse), "dislike" },
+            { typeof(GetViewResponse), "view" },
+            { typeof(GetServerLogResponse), "log" },
             { typeof(Employee), "employee" },
-            { typeof(VideoDto), "video" },
-            { typeof(UserDto), "user" },
-            { typeof(CommentDto), "comment" },
-            { typeof(LikeDto), "like" },
-            { typeof(DislikeDto), "dislike" },
-            { typeof(ViewDto), "view" },
-            { typeof(ServerLogDto), "log" }
+            
+            // Для POST/PUT - используются Request классы
+            { typeof(PostVideoRequest), "video" },
+            { typeof(PostUserRequest), "user" },
+            { typeof(PutUserRequest), "user" },
+            { typeof(PostPutCommentRequest), "comment" },
+            { typeof(PostLikeRequest), "like" },
+            { typeof(PostDislikeRequest), "dislike" },
+            { typeof(PostViewRequest), "view" },
+            { typeof(PostPutEmployeeRequest), "employee" }
         };
 
         public WpfApiClient(HttpClient httpClient)
@@ -44,7 +55,6 @@ namespace WpfApiClient.Services
                 $"Зарегистрируйте его в {nameof(EntityEndpoints)}.");
         }
 
-
         public async Task<List<T>> GetListAsync<T>(int page = 1, int pageSize = 20, string? sortBy = null, bool sortAscending = true)
         {
             var entity = GetEntityEndpoint<T>();
@@ -63,9 +73,7 @@ namespace WpfApiClient.Services
 
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<List<T>>(_jsonOptions);
-            if(result == null)
-                return new List<T>();
-            return result;
+            return result ?? new List<T>();
         }
 
         public async Task<List<UserVideoListItemDto>> GetUserVideosAsync(int userId)
@@ -75,11 +83,8 @@ namespace WpfApiClient.Services
 
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<List<UserVideoListItemDto>>(_jsonOptions);
-            if(result == null)
-                return new List<UserVideoListItemDto>();
-            return result;
+            return result ?? new List<UserVideoListItemDto>();
         }
-
 
         public async Task<T> GetByIdAsync<T>(int id)
         {
@@ -99,8 +104,8 @@ namespace WpfApiClient.Services
 
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<AddRezult>(_jsonOptions);
-            if(!result.Success)
-                 throw new InvalidOperationException("Не удалось получить результат добавления.");
+            if (!result.Success)
+                throw new InvalidOperationException($"Не удалось добавить {typeof(T).Name}: {result.Message}");
             return result;
         }
 
@@ -112,8 +117,8 @@ namespace WpfApiClient.Services
 
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<UpdateRezult>(_jsonOptions);
-            if(!result.Success)
-                 throw new InvalidOperationException("Не удалось получить результат обновления.");
+            if (!result.Success)
+                throw new InvalidOperationException($"Не удалось обновить {typeof(T).Name}: {result.Message}");
             return result;
         }
 
@@ -124,8 +129,20 @@ namespace WpfApiClient.Services
 
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<DeleteResult>(_jsonOptions);
-            if(!result.Success)
-                 throw new InvalidOperationException("Не удалось получить результат удаления.");
+            if (!result.Success)
+                throw new InvalidOperationException($"Не удалось удалить {typeof(T).Name}: {result.Message}");
+            return result;
+        }
+
+        public async Task<UpdateRezult> ResetPasswordAsync(int userId, ForcedPasswordResetRequest request)
+        {
+            var response = await _httpClient.PutAsJsonAsync(
+                $"/wpf/reset/password/{userId}", request, _jsonOptions);
+
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadFromJsonAsync<UpdateRezult>(_jsonOptions);
+            if (!result.Success)
+                throw new InvalidOperationException($"Не удалось сбросить пароль: {result.Message}");
             return result;
         }
 
@@ -138,6 +155,5 @@ namespace WpfApiClient.Services
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<int>(_jsonOptions);
         }
-
     }
 }

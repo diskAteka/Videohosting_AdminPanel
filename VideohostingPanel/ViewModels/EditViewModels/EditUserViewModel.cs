@@ -1,12 +1,137 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using SharedLib.Contracts.Admin;
+using SharedLib.Models;
+using System.Text.RegularExpressions;
+using System.Windows;
+using VideohostingPanel.Resources.Elements;
+using VideohostingPanel.Services;
+using VideohostingPanel.ViewModels.Base;
 
 namespace VideohostingPanel.ViewModels.EditViewModels
 {
-    internal class EditUserViewModel
+    public partial class EditUserViewModel : BaseViewModel
     {
+        private ApiService _apiService;
+        private string emailRegex = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+
+        #region Свйоства для разметки
+
+        [ObservableProperty]
+        private GetUserResponse? _user;
+
+        [ObservableProperty]
+        private bool _isEditMode;
+
+        [ObservableProperty]
+        private string _password = string.Empty;
+
+        #endregion
+
+        #region Команды
+
+
+        [RelayCommand]
+        private async Task SaveChanges()
+        {
+            try
+            {
+                IsBusy = true;
+                if (string.IsNullOrEmpty(User.Name))
+                {
+                    ModernMessageBox.Show("Укажите имя пользователя", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                if(User.Name.Length > 50 || User.Name.Length < 3)
+                {
+                    ModernMessageBox.Show("Некорректная длина имени пользователя", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                if (string.IsNullOrEmpty(User.Email))
+                {
+                    ModernMessageBox.Show("Укажите Email пользователя", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                if(!Regex.IsMatch(User.Email, emailRegex))
+                {
+                    ModernMessageBox.Show("Некорректный формат Email", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                if (IsEditMode) //Если страница открыта в режиме редактирования
+                {
+                    var updateUserRequest = new PutUserRequest
+                    {
+                        Name = User.Name,
+                        Email = User.Email,
+                        CanUpload = User.CanUpload,
+                        IsActive = User.IsActive,
+                        RegisteredAt = User.RegisteredAt,
+                    };
+                    var response = await _apiService.UpdateAsync(User.Id, updateUserRequest);
+                    if (response.Success)
+                    {
+                        ModernMessageBox.Show($"Данные пользователя обновлены\nИзмененные таблицы:\n" +
+                            $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
+                            "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        GoBack();
+                    }
+                    else
+                    {
+                        ModernMessageBox.Show($"Непредвиденная ошибка\nИзмененные таблицы:\n" +
+                            $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
+                            "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(Password))
+                    {
+                        ModernMessageBox.Show("Укажите пароль пользователя", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                    if(Password.Length < 6 || Password.Length > 16)
+                    {
+                        ModernMessageBox.Show("Некорректная длина пароля (от 6 до 16 символов)", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                    var newUserRequest = new PostUserRequest
+                    {
+                        UserName = User.Name,
+                        Email = User.Email,
+                        Password = Password, //На сервере будет захеширован
+                        CanUpload = User.CanUpload,
+                        IsActive = User.IsActive,
+                    };
+                }
+            }
+            catch
+            {
+
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+
+        [RelayCommand]
+        private void GoBack()
+        {
+            OnGoBackRequested?.Invoke();
+        }
+        #endregion
+
+        #region Навигация
+
+        public event Action? OnGoBackRequested;
+
+        #endregion
+
+        #region Дополонительные команды
+
+
+
+        #endregion
     }
 }

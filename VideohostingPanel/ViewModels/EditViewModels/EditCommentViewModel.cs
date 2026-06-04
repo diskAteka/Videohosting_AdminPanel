@@ -12,14 +12,14 @@ namespace VideohostingPanel.ViewModels.EditViewModels
     public partial class EditCommentViewModel : BaseViewModel
     {
         private readonly ApiService _apiService;
-        private readonly CommentDto? _originalComment;
+        private readonly GetCommentResponse? _originalComment;
 
         #region Свойства для формы
         [ObservableProperty]
         private bool _isEditMode;
 
         [ObservableProperty]
-        private CommentDto _comment;
+        private GetCommentResponse _comment;
 
         [ObservableProperty]
         private ObservableCollection<ComboBoxItem> _videos = new();
@@ -70,7 +70,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
 
                 if (IsEditMode)//Если включен режим редактирования
                 {
-                    var postDto = new PostCommentDto
+                    var postDto = new PostPutCommentRequest
                     {
                         VideoId = Comment.VideoId,
                         UserId = Comment.UserId,
@@ -96,7 +96,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                 }
                 else//Если включен режим создания нового объекта
                 {
-                    var postDto = new PostCommentDto
+                    var postDto = new PostPutCommentRequest
                     {
                         VideoId = Comment.VideoId,
                         UserId = Comment.UserId,
@@ -150,7 +150,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
             try
             {
                 IsBusy = true;
-                var deleteResult = await _apiService.DeleteAsync<CommentDto>(Comment.Id);
+                var deleteResult = await _apiService.DeleteAsync<GetCommentResponse>(Comment.Id);
 
                 if (deleteResult.Success)
                 {
@@ -184,7 +184,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
             try
             {
                 IsBusy = true;
-                var video = await _apiService.GetByIdAsync<VideoDto>(id);
+                var video = await _apiService.GetByIdAsync<GetVideoResponse>(id);
 
                 if (video != null)
                 {
@@ -221,7 +221,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
             try
             {
                 IsBusy = true;
-                var user = await _apiService.GetByIdAsync<UserDto>(id);
+                var user = await _apiService.GetByIdAsync<GetUserResponse>(id);
 
                 if (user != null)
                 {
@@ -262,7 +262,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
 
         #region Конструктор
 
-        public EditCommentViewModel(ApiService apiService, CommentDto? comment = null)
+        public EditCommentViewModel(ApiService apiService, GetCommentResponse? comment = null)
         {
             _apiService = apiService;
             _originalComment = comment;
@@ -270,7 +270,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
 
             if (_isEditMode && comment != null)
             {
-                _comment = new CommentDto
+                _comment = new GetCommentResponse
                 {
                     Id = comment.Id,
                     VideoId = comment.VideoId,
@@ -282,7 +282,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
             }
             else
             {
-                _comment = new CommentDto
+                _comment = new GetCommentResponse
                 {
                     Date = DateTime.Now
                 };
@@ -320,7 +320,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         {
             try
             {
-                var videos = await _apiService.GetListAsync<VideoDto>(page: 1, pageSize: 1000);
+                var videos = await _apiService.GetListAsync<GetVideoResponse>(page: 1, pageSize: 1000);
                 Videos.Clear();
                 foreach (var video in videos)
                 {
@@ -341,7 +341,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         {
             try
             {
-                var users = await _apiService.GetListAsync<UserDto>(page: 1, pageSize: 1000);
+                var users = await _apiService.GetListAsync<GetUserResponse>(page: 1, pageSize: 1000);
                 Users.Clear();
                 foreach (var user in users)
                 {
