@@ -110,14 +110,15 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <!-- Кнопка удалить-->
-                            <Button Grid.Column="0" Content="УДАЛИТЬ СОТРУДНИКА" 
+                            <Button Grid.Column="0" Content="Удалить запись" 
                                     Command="{Binding DeleteCommand}"
                                     Background="#66FF0000" 
                                     Style="{StaticResource BaseButtonStyle}"
-                                    Height="45" Margin="10" HorizontalAlignment="Center" Width="250"
+                                    Height="45" Margin="10" HorizontalAlignment="Left" Width="150"
                                     Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            
                             <Button Grid.Column="3" Content="Сохранить" 
-                                    Command="{Binding SaveCommand}" HorizontalAlignment="Center"
+                                    Command="{Binding SaveCommand}" HorizontalAlignment="Right"
                                     Style="{StaticResource OutlinedButtonStyle}" Width="250" Height="45" Margin="10"/>
                         </Grid>
                     </Border>

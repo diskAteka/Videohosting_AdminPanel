@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:converters="clr-namespace:VideohostingPanel.Converters"
       mc:Ignorable="d"
       d:DesignHeight="800" d:DesignWidth="1200"
       Title="EditVideoPage"
@@ -62,7 +63,7 @@
                     <Border Grid.Row="0"
                             Background="{StaticResource HeaderGradient}"
                             CornerRadius="20,20,0,0" Height="70">
-                        <TextBlock Text="Редактирование видео" FontSize="24" FontWeight="Bold"
+                        <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="Bold"
                                    Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
 
@@ -121,12 +122,12 @@
                             <TextBlock Text="Ссылка на видео" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                             <TextBox Text="{Binding Video.Link}" Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
 
-                            <TextBlock Text="Постер" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                            <TextBlock Text="Ссылка на постер" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                             <TextBox Text="{Binding Video.Poster}" Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
 
                             <!-- Статус верификации -->
                             <TextBlock Text="Статус верификации" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <ComboBox ItemsSource="{Binding VerificationStatuses}"
+                            <ComboBox ItemsSource="{Binding VerificationStatuses}" Width="200" HorizontalAlignment="Left"
                                       SelectedItem="{Binding SelectedVerificationStatus}"
                                       Style="{StaticResource BaseComboBoxStyle}" Margin="0,0,0,15"/>
 
@@ -155,11 +156,6 @@
                             <TextBlock Text="Дата загрузки" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                             <TextBox Text="{Binding Video.DateUpload, StringFormat=\{0:dd.MM.yyyy HH:mm\}}"
                                      Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
-
-                            <!-- Кнопка удалить -->
-                            <Button Content="УДАЛИТЬ ВИДЕО" Command="{Binding DeleteCommand}"
-                                    Background="#66FF0000" Style="{StaticResource BaseButtonStyle}"
-                                    Height="45" Margin="0,20,0,0" HorizontalAlignment="Center" Width="250"/>
                         </StackPanel>
                     </ScrollViewer>
 
@@ -172,7 +168,14 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="1" Content="Сохранить" Command="{Binding SaveCommand}"
+                            <!-- Кнопка удалить -->
+                            <Button Grid.Column="0" Content="Удалить запись" Command="{Binding DeleteCommand}"
+                                    Background="#66FF0000" Style="{StaticResource BaseButtonStyle}"
+                                    Height="45" Margin="10" Width="150" HorizontalAlignment="Left"
+                                    Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                            <Button Grid.Column="4" Content="Сохранить" Command="{Binding SaveCommand}" 
+                                    HorizontalAlignment="Right"
                                     Style="{StaticResource OutlinedButtonStyle }" Width="250" Margin="10" Height="45"/>
                             
                         </Grid>

@@ -171,22 +171,19 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Кнопка удалить-->
-                            <Button Content="УДАЛИТЬ КОММЕНТАРИЙ" 
+                            <Button Content="Удалить запись" 
                                     Grid.Column="0"
                                     Command="{Binding DeleteCommand}"
                                     Background="#66FF0000" 
                                     Style="{StaticResource BaseButtonStyle}"
                                     Height="45" 
                                     Margin="10"
-                                    HorizontalAlignment="Center" 
-                                    Width="250"
+                                    HorizontalAlignment="Left" 
+                                    Width="150"
                                     Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
-                            <Button Grid.Column="3" 
-                                    Content="Сохранить" 
-                                    Command="{Binding SaveCommand}"
-                                    Style="{StaticResource OutlinedButtonStyle}" 
-                                    Width="250" 
-                                    Margin="10"/>
+                            <Button Grid.Column="3" HorizontalAlignment="Right" Style="{StaticResource OutlinedButtonStyle}"
+                                    Content="Сохранить" Width="250" Margin="10"
+                                    Command="{Binding SaveCommand}"/>
                         </Grid>
                     </Border>
                 </Grid>
