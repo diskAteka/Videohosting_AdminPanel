@@ -7,6 +7,7 @@ using System.Windows;
 using VideohostingPanel.Resources.Elements;
 using VideohostingPanel.Services;
 using VideohostingPanel.ViewModels.Base;
+using VideohostingPanel.Views.Windows;
 
 namespace VideohostingPanel.ViewModels.EditViewModels
 {
@@ -29,7 +30,6 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         #endregion
 
         #region Команды
-
 
         [RelayCommand]
         private async Task SaveChanges()
@@ -116,6 +116,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
+                    Password = string.Empty;
                 }
             }
             catch (Exception ex)
@@ -134,7 +135,59 @@ namespace VideohostingPanel.ViewModels.EditViewModels
             try
             {
                 IsBusy = true;
-                
+
+                string? newPassword = ResetPasswordWindow.ShowResetPasswordDialog(User.Id.ToString(), User.Name, User.Email);
+                if (newPassword != null)
+                {
+                    var response = await _apiService.ResetPasswordAsync(User.Id, newPassword);
+                    if (response.Success)
+                    {
+                        ModernMessageBox.Show($"Пароль успешно сброшен и установлен новый\nИзмененные таблицы:\n" +
+                            $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
+                            "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        ModernMessageBox.Show($"Непредвиденная ошибка: {response.Message}\nИзмененные таблицы:\n" +
+                            $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
+                            "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ModernMessageBox.Show($"Внутренняя ошибка программы: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task DeleteUser()
+        {
+            try
+            {
+                IsBusy = true;
+                var result = ModernMessageBox.Show($"Вы уверены, что хотите удалить пользователя {User.Name}?\nЭто действие невозможно отменить.", "Подтверждение", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    var response = await _apiService.DeleteAsync<User>(User.Id);
+                    if (response.Success)
+                    {
+                        ModernMessageBox.Show($"Пользователь успешно удален\nИзмененные таблицы:\n" +
+                            $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
+                            "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        GoBack();
+                    }
+                    else
+                    {
+                        ModernMessageBox.Show($"Непредвиденная ошибка: {response.Message}\nИзмененные таблицы:\n" +
+                            $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
+                            "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -151,6 +204,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         {
             OnGoBackRequested?.Invoke();
         }
+
         #endregion
 
         #region Навигация
@@ -159,9 +213,24 @@ namespace VideohostingPanel.ViewModels.EditViewModels
 
         #endregion
 
-        #region Дополонительные команды
+        #region Конструктор
 
-
+        public EditUserViewModel(ApiService apiService, GetUserResponse? user = null)
+        {
+            _apiService = apiService;
+            if (user != null)
+            {
+                User = user;
+                IsEditMode = true;
+                Title = $"Редактирование пользователя: {User.Name}";
+            }
+            else
+            {
+                User = new GetUserResponse();
+                IsEditMode = false;
+                Title = "Создание нового пользователя";
+            }
+        }
 
         #endregion
     }

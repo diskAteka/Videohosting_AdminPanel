@@ -101,6 +101,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
+                    Password = string.Empty;
                 }
             }
             catch (Exception ex) 

@@ -16,6 +16,9 @@ namespace VideohostingPanel.Views.Windows
         public string UserName { get; set; } = "Иван Петров";
         public string UserEmail { get; set; } = "ivan.petrov@example.com";
 
+        // Новый пароль (доступен после успешного сброса)
+        public string NewPassword { get; private set; } = string.Empty;
+
         public ResetPasswordWindow()
         {
             InitializeComponent();
@@ -27,9 +30,14 @@ namespace VideohostingPanel.Views.Windows
         }
 
         /// <summary>
-        /// Показать окно сброса пароля для конкретного пользователя
+        /// Показать окно сброса пароля для конкретного пользователя.
+        /// Возвращает новый пароль или null, если операция отменена.
         /// </summary>
-        public static bool ShowResetPasswordDialog(string userId, string userName, string userEmail)
+        /// <param name="userId">ID пользователя</param>
+        /// <param name="userName">Имя пользователя</param>
+        /// <param name="userEmail">Email пользователя</param>
+        /// <returns>Новый пароль или null при отмене</returns>
+        public static string? ShowResetPasswordDialog(string userId, string userName, string userEmail)
         {
             var window = new ResetPasswordWindow
             {
@@ -39,7 +47,12 @@ namespace VideohostingPanel.Views.Windows
                 Owner = Application.Current.MainWindow
             };
 
-            return window.ShowDialog() == true;
+            if (window.ShowDialog() == true)
+            {
+                return window.NewPassword;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -80,8 +93,11 @@ namespace VideohostingPanel.Views.Windows
                 return;
             }
 
+            // Сохраняем новый пароль
+            NewPassword = _userPassword;
+
             // Здесь должна быть логика сброса пароля
-            // Например: UserService.ResetPassword(UserId, _userPassword);
+            // Например: UserService.ResetPassword(UserId, NewPassword);
 
             MessageBox.Show($"Пароль для пользователя {UserName} успешно изменен!",
                             "Успех",
