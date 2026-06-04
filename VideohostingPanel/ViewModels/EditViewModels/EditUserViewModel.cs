@@ -77,7 +77,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                     }
                     else
                     {
-                        ModernMessageBox.Show($"Непредвиденная ошибка\nИзмененные таблицы:\n" +
+                        ModernMessageBox.Show($"Непредвиденная ошибка: {response.Message}\nИзмененные таблицы:\n" +
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
@@ -89,7 +89,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         ModernMessageBox.Show("Укажите пароль пользователя", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
-                    if(Password.Length < 6 || Password.Length > 16)
+                    if (Password.Length < 6 || Password.Length > 16)
                     {
                         ModernMessageBox.Show("Некорректная длина пароля (от 6 до 16 символов)", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
@@ -102,11 +102,25 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         CanUpload = User.CanUpload,
                         IsActive = User.IsActive,
                     };
+                    var response = await _apiService.AddAsync(newUserRequest);
+                    if (response.Success)
+                    {
+                        ModernMessageBox.Show($"Пользователь успешно создан\nИзмененные таблицы:\n" +
+                            $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
+                            "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        GoBack();
+                    }
+                    else
+                    {
+                        ModernMessageBox.Show($"Непредвиденная ошибка: {response.Message}\nИзмененные таблицы:\n" +
+                            $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
+                            "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-
+                ModernMessageBox.Show($"Внутренняя ошибка программы: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -114,6 +128,23 @@ namespace VideohostingPanel.ViewModels.EditViewModels
             }
         }
 
+        [RelayCommand]
+        private async Task ResetPassword()
+        {
+            try
+            {
+                IsBusy = true;
+                
+            }
+            catch (Exception ex)
+            {
+                ModernMessageBox.Show($"Внутренняя ошибка программы: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
 
         [RelayCommand]
         private void GoBack()
