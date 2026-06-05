@@ -155,5 +155,31 @@ namespace WpfApiClient.Services
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<int>(_jsonOptions);
         }
+
+        public async Task<UpdateRezult> VerifyVideoAsync(int videoId)
+        {
+            var response = await _httpClient.PutAsync($"/wpf/video/verify/{videoId}", null);
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadFromJsonAsync<UpdateRezult>(_jsonOptions);
+            if (!result.Success)
+                throw new InvalidOperationException($"Не удалось верифицировать видео: {result.Message}");
+            return result;
+        }
+
+        public async Task<Stream> StreamVideoAsync(int videoId)
+        {
+            var response = await _httpClient.GetAsync($"/wpf/stream/{videoId}",
+                HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStreamAsync();
+        }
+
+        public async Task<Stream> GetPosterAsync(int videoId)
+        {
+            var response = await _httpClient.GetAsync($"/wpf/video/poster/{videoId}",
+                HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadAsStreamAsync();
+        }
     }
 }

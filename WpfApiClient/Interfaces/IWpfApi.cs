@@ -6,26 +6,45 @@ namespace WpfApiClient.Interfaces
 {
     public interface IWpfApi
     {
-        // Списки (GET)
+        #region Списки (GET
         Task<List<T>> GetListAsync<T>(int page = 1, int pageSize = 20, string? sortBy = null, bool sortAscending = true);
         Task<List<UserVideoListItemDto>> GetUserVideosAsync(int userId);
+        #endregion
 
-        // Получение по ID (GET)
+        #region Получение по ID (GET)
         Task<T> GetByIdAsync<T>(int id);
+        #endregion
 
-        // Добавление (POST)
+        #region Добавление (POST)
         Task<AddRezult> AddAsync<T>(T dto);
+        #endregion
 
-        // Обновление (PUT)
+        #region Обновление (PUT)
         Task<UpdateRezult> UpdateAsync<T>(int id, T dto);
+        #endregion
 
-        // Удаление (DELETE)
+        #region Удаление (DELETE)
         Task<DeleteResult> DeleteAsync<T>(int id);
+        #endregion
 
-        // Сброс пароля пользователя
+        #region Сброс пароля пользователя
         Task<UpdateRezult> ResetPasswordAsync(int userId, ForcedPasswordResetRequest request);
+        #endregion
 
-        // Статистика
+        #region Статистика
         Task<int> GetCountAsync(string type, bool isAdmin = true);
+        #endregion
+
+        #region Верификация видео (PUT)
+        Task<UpdateRezult> VerifyVideoAsync(int videoId);
+        #endregion
+
+        #region Потоковое видео (GET)
+        Task<Stream> StreamVideoAsync(int videoId);
+        #endregion
+
+        #region Постер видео (GET)
+        Task<Stream> GetPosterAsync(int videoId);
+        #endregion
     }
 }

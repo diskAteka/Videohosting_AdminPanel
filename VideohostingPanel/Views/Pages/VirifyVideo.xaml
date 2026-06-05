@@ -19,7 +19,7 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid>
+    <Grid Margin="0,0,0,0">
         <Grid.Background>
             <RadialGradientBrush Center="0.8,0.2" RadiusX="1.2" RadiusY="1.2">
                 <GradientStop Color="#2D0B4A" Offset="0"/>
@@ -172,7 +172,7 @@
                                     <TextBlock Text="Причина отклонения:" FontSize="14" FontWeight="SemiBold"
                                                Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,10"/>
                                     <TextBox Text="{Binding RejectReason}" Style="{StaticResource BaseTextBoxStyle}"
-                                             Height="80" TextWrapping="Wrap" AcceptsReturn="True"/>
+                                             Height="80" TextWrapping="Wrap" AcceptsReturn="True" Padding="5"/>
                                 </StackPanel>
                             </Border>
 
@@ -192,9 +192,9 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Content="ОТКЛОНИТЬ" Command="{Binding RejectCommand}"
+                            <Button Grid.Column="0" Content="Отклонить" Command="{Binding RejectCommand}"
                                     Style="{StaticResource RejectOutlinedButtonStyle}" Width="250" Height="45" Margin="10"/>
-                            <Button Grid.Column="3" Content="ПРИНЯТЬ" Command="{Binding ApproveCommand}"
+                            <Button Grid.Column="3" Content="Принять" Command="{Binding ApproveCommand}"
                                     Style="{StaticResource OutlinedButtonStyle}" Width="250" Height="45" Margin="10"/>
                         </Grid>
                     </Border>

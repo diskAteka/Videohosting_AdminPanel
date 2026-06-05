@@ -1,7 +1,8 @@
 ﻿using SharedLib.Contracts.Admin;
 using SharedLib.Contracts.Response.Video;
 using SharedLib.Contracts.RezultModels;
-using VideohostingPanel.Interfaces;
+using SharedLib.Interfaces;
+using System.IO;
 using WpfApiClient.Interfaces;
 
 namespace VideohostingPanel.Services
@@ -63,5 +64,29 @@ namespace VideohostingPanel.Services
         {
             return await _apiClient.GetUserVideosAsync(userId);
         }
+
+        public async Task<UpdateRezult> VerifyVideoAsync(int videoId)// Верификация видео
+        {
+            return await _apiClient.VerifyVideoAsync(videoId);
+        }
+
+        public async Task<Stream> StreamVideoAsync(int videoId)// Потоковое видео
+        {
+            return await _apiClient.StreamVideoAsync(videoId);
+        }
+
+        public async Task<Stream> GetPosterAsync(int videoId)// Получение постера видео
+        {
+            return await _apiClient.GetPosterAsync(videoId);
+        }
+
+        private async Task<AddRezult> LogAsync<T>(IRezult resultModel) where T : class, IModel
+        {
+            throw new NotImplementedException();
+            // Здесь будет логика логирования всех операций сотрудников.
+            // Нужно получить информацию о текущем сотруднике из глобального контекста.
+            // Метод будет принимать тип сущности, над которой выполняется операция, и результат операции.
+            // После чего метод соберет ответ, добавит в него Id сотрудника и отправит на сервер для сохранения в базе данных.
+        }//Метод для логирования действий сотрудников. Он будет вызываться в других методах этого класса.
     }
 }
