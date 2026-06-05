@@ -29,6 +29,13 @@ namespace VideohostingPanel.ViewModels.EditViewModels
 
         [ObservableProperty]
         private string _authorSearchId = string.Empty;
+
+        [ObservableProperty]
+        private DateTime _selectedUploadDate = DateTime.UtcNow;
+
+        [ObservableProperty]
+        private string _uploadTime = DateTime.Now.ToString("HH:mm");
+
         public ObservableCollection<VerificationStatusItem> VerificationStatuses { get; } = new()
         {
             new VerificationStatusItem(false, "Не верифицировано"),
@@ -62,10 +69,19 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-
+                if (TimeSpan.TryParse(UploadTime, out TimeSpan time))
+                {
+                    SelectedUploadDate = SelectedUploadDate.Date + time;
+                }
+                else
+                {
+                    ModernMessageBox.Show("Неверный формат времени. Используйте ЧЧ:ММ (например: 14:30)",
+                        "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
                 if (SelectedAuthor != null)
                     Video.AuthorId = SelectedAuthor.Id;
-
+                    
                 if (SelectedVerificationStatus != null)
                     Video.IsVerified = SelectedVerificationStatus.IsVerified;
 
@@ -73,7 +89,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                 {
                     Name = Video.Name,
                     Description = Video.Description,
-                    DateUpload = Video.DateUpload,
+                    DateUpload = SelectedUploadDate,
                     Link = Video.Link,
                     Poster = Video.Poster,
                     Likes = Video.Likes,
@@ -235,6 +251,8 @@ namespace VideohostingPanel.ViewModels.EditViewModels
             {
                 Video = video;
                 IsEditMode = true;
+                SelectedUploadDate = video.DateUpload;
+                UploadTime = video.DateUpload.ToString("HH:mm");
                 Title = $"Редактирование видео: {Video.Name}";
             }
             else

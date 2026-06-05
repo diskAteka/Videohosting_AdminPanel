@@ -20,7 +20,7 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid>
+    <Grid Margin="0,0,0,-307">
         <Grid.Background>
             <RadialGradientBrush Center="0.8,0.2" RadiusX="1.2" RadiusY="1.2">
                 <GradientStop Color="#2D0B4A" Offset="0"/>
@@ -144,13 +144,13 @@
                             <!-- Название -->
                             <TextBlock Text="Название видео *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                             <TextBox Text="{Binding Video.Name, UpdateSourceTrigger=PropertyChanged}" 
-                                     Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
+                                     Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15" Padding="5"/>
 
                             <!-- Описание -->
                             <TextBlock Text="Описание" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                             <TextBox Text="{Binding Video.Description, UpdateSourceTrigger=PropertyChanged}" 
                                      Style="{StaticResource BaseTextBoxStyle}" 
-                                     Height="100" 
+                                     Height="100" Padding="5"
                                      TextWrapping="Wrap" 
                                      AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto"
@@ -165,7 +165,7 @@
                                 </Grid.ColumnDefinitions>
                                 <ComboBox Grid.Column="0"
                                           ItemsSource="{Binding Authors}" SelectedItem="{Binding SelectedAuthor}"
-                                          DisplayMemberPath="DisplayName"
+                                          DisplayMemberPath="DisplayName" Padding="3"
                                           Style="{StaticResource BaseComboBoxStyle}" Margin="0,0,10,0"/>
                                 <Border Grid.Column="1" Background="{StaticResource DarkBackgroundBrush}"
                                         CornerRadius="14" BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1">
@@ -204,23 +204,31 @@
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2">
-                                    <!-- Дата загрузки -->
-                                    <TextBlock Text="Дата загрузки" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+
+                                    <!-- Дата и время загрузки -->
+                                    <TextBlock Text="Дата и время загрузки" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                                     <Grid Margin="0,0,0,15">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <DatePicker Grid.Column="0" 
+
+                                        <DatePicker Grid.Column="0" Padding="3"
                                                     SelectedDate="{Binding SelectedUploadDate}"
-                                                    Style="{StaticResource BaseDatePickerStyle}"
-                                                    Margin="0,0,0,0"/>
-                                            <TextBlock Grid.Column="1" 
-                                                       Text="{Binding SelectedUploadDate, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}"
-                                                       VerticalAlignment="Center"
-                                                       Margin="10,0,0,0"
-                                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                                       FontSize="12"/>
+                                                    Style="{StaticResource BaseDatePickerStyle}"/>
+
+                                        <TextBlock Grid.Column="1" 
+                                                   Text="Время (ЧЧ:ММ):" 
+                                                   VerticalAlignment="Center"
+                                                   Margin="15,0,10,0"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   FontSize="12"/>
+
+                                        <TextBox Grid.Column="2" 
+                                                 Text="{Binding UploadTime, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource BaseTextBoxStyle}" Height="45" Padding="3"
+                                                 Margin="0"/>
                                     </Grid>
                                 </StackPanel>
                             </Grid>
@@ -238,15 +246,15 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Просмотры" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
-                                    <TextBox Text="{Binding Video.Views}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Margin="0,5,5,0"/>
+                                    <TextBox Text="{Binding Video.Views}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Margin="0,5,5,0" Padding="3"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="Лайки" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
-                                    <TextBox Text="{Binding Video.Likes}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Margin="5,5,5,0"/>
+                                    <TextBox Text="{Binding Video.Likes}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Margin="5,5,5,0" Padding="3"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="Дизлайки" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
-                                    <TextBox Text="{Binding Video.Dislikes}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Margin="5,5,0,0"/>
+                                    <TextBox Text="{Binding Video.Dislikes}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Margin="5,5,0,0" Padding="3"/>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>

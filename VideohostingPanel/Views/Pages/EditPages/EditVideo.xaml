@@ -4,16 +4,18 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:converters="clr-namespace:VideohostingPanel.Converters"
-      mc:Ignorable="d" d:DesignWidth="1200"
-      Title="EditVideoPage"
+      mc:Ignorable="d"
+      Title="EditVideoPage" 
       MinWidth="1200" MinHeight="800"
-      Background="Transparent" Height="1097">
+      Height="800" Width="1200"
+      Background="Transparent">
 
     <Page.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/VideohostingPanel;component/Resources/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         </ResourceDictionary>
     </Page.Resources>
 
@@ -72,16 +74,16 @@
                         <StackPanel>
                             <!-- ID -->
                             <TextBlock Text="ID" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Video.Id}" Style="{StaticResource BaseTextBoxStyle}"
+                            <TextBox Text="{Binding Video.Id}" Style="{StaticResource BaseTextBoxStyle}" Padding="3"
                                      IsReadOnly="True" Background="{StaticResource DarkBackgroundBrush}" Margin="0,0,0,15"/>
 
                             <!-- Название видео -->
                             <TextBlock Text="Название видео *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Video.Name}" Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
+                            <TextBox Text="{Binding Video.Name}" Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15" Padding="5"/>
 
                             <!-- Описание -->
                             <TextBlock Text="Описание" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Video.Description}" Style="{StaticResource BaseTextBoxStyle}"
+                            <TextBox Text="{Binding Video.Description}" Style="{StaticResource BaseTextBoxStyle}" Padding="5"
                                      Height="100" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,15"/>
 
                             <!-- Автор -->
@@ -93,7 +95,7 @@
                                 </Grid.ColumnDefinitions>
                                 <ComboBox Grid.Column="0"
                                           ItemsSource="{Binding Authors}" SelectedItem="{Binding SelectedAuthor}"
-                                          DisplayMemberPath="DisplayName"
+                                          DisplayMemberPath="DisplayName" 
                                           Style="{StaticResource BaseComboBoxStyle}" Margin="0,0,10,0"/>
                                 <Border Grid.Column="1" Background="{StaticResource DarkBackgroundBrush}"
                                         CornerRadius="14" BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1">
@@ -119,10 +121,10 @@
 
                             <!-- Ссылки -->
                             <TextBlock Text="Ссылка на видео" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Video.Link}" Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
+                            <TextBox Text="{Binding Video.Link}" Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15" Padding="5"/>
 
                             <TextBlock Text="Ссылка на постер" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Video.Poster}" Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
+                            <TextBox Text="{Binding Video.Poster}" Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15" Padding="5"/>
 
                             <!-- Статус верификации -->
                             <TextBlock Text="Статус верификации" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
@@ -151,10 +153,31 @@
                                 </StackPanel>
                             </Grid>
 
-                            <!-- Дата загрузки -->
-                            <TextBlock Text="Дата загрузки" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Video.DateUpload, StringFormat=\{0:dd.MM.yyyy HH:mm\}}"
-                                     Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
+                            <!-- Дата и время загрузки -->
+                            <TextBlock Text="Дата и время загрузки" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <DatePicker Grid.Column="0" Padding="3"
+                                            SelectedDate="{Binding SelectedUploadDate}"
+                                            Style="{StaticResource BaseDatePickerStyle}"/>
+
+                                <TextBlock Grid.Column="1" 
+                                           Text="Время (ЧЧ:ММ):" 
+                                           VerticalAlignment="Center"
+                                           Margin="15,0,10,0"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           FontSize="12"/>
+
+                                <TextBox Grid.Column="2" 
+                                         Text="{Binding UploadTime, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource BaseTextBoxStyle}" Height="45" Padding="3"
+                                         Margin="0"/>
+                            </Grid>
                         </StackPanel>
                     </ScrollViewer>
 

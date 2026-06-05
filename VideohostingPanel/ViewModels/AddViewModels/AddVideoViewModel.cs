@@ -15,6 +15,8 @@ namespace VideohostingPanel.ViewModels.AddViewModels
     {
         private readonly ApiService _apiService;
 
+        #region Свойства для макета
+
         [ObservableProperty]
         private PostVideoRequest _video;
 
@@ -36,7 +38,6 @@ namespace VideohostingPanel.ViewModels.AddViewModels
         [ObservableProperty]
         private bool _videoIsSelected;
 
-        // Авторы
         [ObservableProperty]
         private ObservableCollection<AuthorDisplayItem> _authors = new();
 
@@ -46,7 +47,6 @@ namespace VideohostingPanel.ViewModels.AddViewModels
         [ObservableProperty]
         private string _authorSearchId = string.Empty;
 
-        // Статус верификации
         public ObservableCollection<VerificationStatusItem> VerificationStatuses { get; } = new()
         {
             new VerificationStatusItem(false, "Не верифицировано"),
@@ -56,9 +56,13 @@ namespace VideohostingPanel.ViewModels.AddViewModels
         [ObservableProperty]
         private VerificationStatusItem _selectedVerificationStatus;
 
-        // Дата загрузки
         [ObservableProperty]
-        private DateTime _selectedUploadDate = DateTime.Now;
+        private DateTime _selectedUploadDate = DateTime.UtcNow;
+
+        [ObservableProperty]
+        private string _uploadTime = DateTime.Now.ToString("HH:mm");
+
+        #endregion
 
         #region Команды для файлов
 
@@ -118,8 +122,6 @@ namespace VideohostingPanel.ViewModels.AddViewModels
             try
             {
                 IsBusy = true;
-
-                // Валидация
                 if (string.IsNullOrWhiteSpace(Video.Name))
                 {
                     ModernMessageBox.Show("Укажите название видео", "Предупреждение",
@@ -140,13 +142,21 @@ namespace VideohostingPanel.ViewModels.AddViewModels
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+                if (TimeSpan.TryParse(UploadTime, out TimeSpan time))
+                {
+                    SelectedUploadDate = SelectedUploadDate.Date + time;
+                }
+                else
+                {
+                    ModernMessageBox.Show("Неверный формат времени. Используйте ЧЧ:ММ (например: 14:30)",
+                        "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
-                // Синхронизация данных
                 Video.AuthorId = SelectedAuthor.Id;
                 Video.IsVerified = SelectedVerificationStatus.IsVerified;
                 Video.DateUpload = SelectedUploadDate;
 
-                // Если постер не выбран, используем заглушку
                 if (!PosterIsSelected)
                 {
                     Video.Poster = "/posters/default.jpg";
@@ -278,7 +288,6 @@ namespace VideohostingPanel.ViewModels.AddViewModels
             SelectedVerificationStatus = VerificationStatuses[0]; // "Не верифицировано"
             SelectedUploadDate = DateTime.Now;
 
-            // Загружаем список авторов
             _ = LoadAuthorsCommand.ExecuteAsync(null);
         }
 

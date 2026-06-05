@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using SharedLib.Contracts.Admin;
 using SharedLib.Models;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Windows;
 using VideohostingPanel.Resources.Elements;
@@ -26,6 +27,12 @@ namespace VideohostingPanel.ViewModels.EditViewModels
 
         [ObservableProperty]
         private string _password = string.Empty;
+
+        [ObservableProperty]
+        private DateTime _registerDateSelected = DateTime.UtcNow;
+
+        [ObservableProperty]
+        private string _registerTime = DateTime.Now.ToString("HH:mm");
 
         #endregion
 
@@ -57,6 +64,17 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                     ModernMessageBox.Show("Некорректный формат Email", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+                if (TimeSpan.TryParse(RegisterTime, out TimeSpan time))
+                {
+                    RegisterDateSelected = RegisterDateSelected.Date + time;
+                }
+                else
+                {
+                    ModernMessageBox.Show("Неверный формат времени. Используйте ЧЧ:ММ (например: 14:30)",
+                        "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
                 if (IsEditMode) //Если страница открыта в режиме редактирования
                 {
                     var updateUserRequest = new PutUserRequest
@@ -65,7 +83,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         Email = User.Email,
                         CanUpload = User.CanUpload,
                         IsActive = User.IsActive,
-                        RegisteredAt = User.RegisteredAt,
+                        RegisteredAt = RegisterDateSelected,
                     };
                     var response = await _apiService.UpdateAsync(User.Id, updateUserRequest);
                     if (response.Success)

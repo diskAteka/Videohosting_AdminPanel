@@ -74,7 +74,7 @@
                         <StackPanel Margin="20">
                             <!-- ID комментария -->
                             <TextBlock Text="ID комментария" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Comment.Id}" Style="{StaticResource BaseTextBoxStyle}"
+                            <TextBox Text="{Binding Comment.Id}" Style="{StaticResource BaseTextBoxStyle}" Padding="3"
                                      IsReadOnly="True" Background="{StaticResource DarkBackgroundBrush}" Margin="0,0,0,15"/>
 
                             <!-- Видео -->
@@ -86,7 +86,7 @@
                                 </Grid.ColumnDefinitions>
                                 <ComboBox Grid.Column="0"
                                           ItemsSource="{Binding Videos}" SelectedItem="{Binding SelectedVideo}"
-                                          DisplayMemberPath="DisplayName"
+                                          DisplayMemberPath="DisplayName" Padding="3"
                                           Style="{StaticResource BaseComboBoxStyle}" Margin="0,0,10,0"/>
                                 <Border Grid.Column="1" Background="{StaticResource DarkBackgroundBrush}"
                                         CornerRadius="14" BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1">
@@ -119,7 +119,7 @@
                                 </Grid.ColumnDefinitions>
                                 <ComboBox Grid.Column="0"
                                           ItemsSource="{Binding Users}" SelectedItem="{Binding SelectedUser}"
-                                          DisplayMemberPath="DisplayName"
+                                          DisplayMemberPath="DisplayName" Padding="3"
                                           Style="{StaticResource BaseComboBoxStyle}" Margin="0,0,10,0"/>
                                 <Border Grid.Column="1" Background="{StaticResource DarkBackgroundBrush}"
                                         CornerRadius="14" BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1">
@@ -145,15 +145,35 @@
 
                             <!-- Текст комментария -->
                             <TextBlock Text="Текст комментария *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Comment.Text}" Style="{StaticResource BaseTextBoxStyle}"
+                            <TextBox Text="{Binding Comment.Text}" Style="{StaticResource BaseTextBoxStyle}" Padding="3"
                                      Height="120" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,15"/>
 
-                            <!-- Дата -->
-                            <TextBlock Text="Дата комментария" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Comment.Date, StringFormat=\{0:dd.MM.yyyy HH:mm\}}"
-                                     Style="{StaticResource BaseTextBoxStyle}" IsReadOnly="True"
-                                     Background="{StaticResource DarkBackgroundBrush}" Margin="0,0,0,15"/>
-       
+                            <!-- Дата и время загрузки -->
+                            <TextBlock Text="Дата и время загрузки" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <DatePicker Grid.Column="0" Padding="3"
+                                            SelectedDate="{Binding SelectedUploadDate}"
+                                            Style="{StaticResource BaseDatePickerStyle}"/>
+
+                                <TextBlock Grid.Column="1" 
+                                           Text="Время (ЧЧ:ММ):" 
+                                           VerticalAlignment="Center"
+                                           Margin="15,0,10,0"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           FontSize="12"/>
+
+                                <TextBox Grid.Column="2" 
+                                         Text="{Binding UploadTime, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource BaseTextBoxStyle}" Height="40" Padding="3"
+                                         Margin="0"/>
+                            </Grid>
+
                         </StackPanel>
                     </ScrollViewer>
 

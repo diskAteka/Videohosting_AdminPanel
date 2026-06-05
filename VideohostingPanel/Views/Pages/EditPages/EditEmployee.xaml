@@ -42,7 +42,7 @@
                         Background="{StaticResource DarkBackgroundBrush}"
                         Width="100" Height="35" FontSize="12">
                     <StackPanel Orientation="Horizontal">
-                        <Image Source="/Images/arrow_left_purple.png" Width="10" Height="10" Margin="0,0,5,0"/>
+                        <Image Source="/Resources/Images/ic_arrow_back.png" Width="10" Height="10" Margin="0,0,5,0"/>
                         <TextBlock Text="Назад"/>
                     </StackPanel>
                 </Button>
@@ -75,16 +75,16 @@
                         <StackPanel>
                             <!-- ID сотрудника -->
                             <TextBlock Text="ID сотрудника" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Employee.Id}" Style="{StaticResource BaseTextBoxStyle}"
+                            <TextBox Text="{Binding Employee.Id}" Style="{StaticResource BaseTextBoxStyle}" Padding="3"
                                      IsReadOnly="True" Background="{StaticResource DarkBackgroundBrush}" Margin="0,0,0,15"/>
 
                             <!-- Имя пользователя -->
                             <TextBlock Text="Имя пользователя *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <TextBox Text="{Binding Employee.UserName}" Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15"/>
+                            <TextBox Text="{Binding Employee.UserName}" Style="{StaticResource BaseTextBoxStyle}" Margin="0,0,0,15" Padding="5"/>
 
                             <!-- Пароль -->
                             <TextBlock Text="Пароль *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
-                            <PasswordBox Style="{StaticResource BasePasswordBoxStyle}"
+                            <PasswordBox Style="{StaticResource BasePasswordBoxStyle}" Padding="5"
                                          services:PasswordBoxHelper.BindPassword="{Binding Password}"
                                          Margin="0,0,0,15"/>
 
