@@ -18,7 +18,7 @@ namespace VideohostingPanel
             var services = new ServiceCollection();
 
             services.AddWpfApiClient(_url);
-            services.AddSingleton<IApiService, ApiService>();
+            //services.AddSingleton<IApiService, ApiService>();
             //services.AddTransient<MainViewModel>();
             services.AddTransient<MainWindow>();
             services.AddTransient<LoginWindow>();
