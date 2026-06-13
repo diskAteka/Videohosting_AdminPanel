@@ -6,7 +6,7 @@ namespace WpfApiClient.Interfaces
 {
     public interface IWpfApi
     {
-        #region Списки (GET
+        #region Списки (GET)
         Task<List<T>> GetListAsync<T>(int page = 1, int pageSize = 20, string? sortBy = null, bool sortAscending = true);
         Task<List<UserVideoListItemDto>> GetUserVideosAsync(int userId);
         #endregion
@@ -40,7 +40,9 @@ namespace WpfApiClient.Interfaces
         #endregion
 
         #region Потоковое видео (GET)
-        Task<Stream> StreamVideoAsync(int videoId);
+        Task<Stream> StreamVideoAsync(int videoId, long? startByte = null);
+        Task<long> GetVideoSizeAsync(int videoId);
+
         #endregion
 
         #region Постер видео (GET)

@@ -79,7 +79,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Image Source="{Binding Video.PosterUrl}" Width="120" Height="90"
+                                    <Image Source="{Binding PosterImageSource}" Width="120" Height="90"
                                            Stretch="UniformToFill" Margin="0,0,20,0" VerticalAlignment="Top" HorizontalAlignment="Right"/>
                                     <StackPanel Grid.Column="1">
                                         <TextBlock Text="{Binding Video.Name}" FontSize="22" FontWeight="Bold"
@@ -110,7 +110,7 @@
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
                                     <MediaElement Grid.Row="0"
-                                                  Source="{Binding Video.Link}"
+                                                  Source="{Binding VideoStream}"
                                                   LoadedBehavior="Manual" UnloadedBehavior="Stop"
                                                   Stretch="Uniform" ScrubbingEnabled="True"
                                                   x:Name="VideoPlayer"/>
@@ -130,7 +130,7 @@
                                             </Button>
                                             <TextBlock Grid.Column="1" Text="{Binding CurrentTime}" Foreground="White"
                                                        VerticalAlignment="Center" Margin="5,0" FontSize="12"/>
-                                            <Slider Grid.Column="2" Value="{Binding Progress}" Minimum="0" Maximum="{Binding Duration}"
+                                            <Slider Grid.Column="2" Value="{Binding VideoSliderPosition}" Minimum="0" Maximum="1"
                                                     Style="{StaticResource VideoSliderStyle}" VerticalAlignment="Center" Margin="5,0"/>
                                             <TextBlock Grid.Column="3" Text="{Binding TotalTime}" Foreground="White"
                                                        VerticalAlignment="Center" Margin="5,0" FontSize="12"/>
