@@ -5,6 +5,7 @@ using SharedLib.Models;
 using System.Net.Http.Json;
 using System.Text.Json;
 using WpfApiClient.Interfaces;
+using System.Net.Http.Headers;
 
 namespace WpfApiClient.Services
 {
@@ -12,6 +13,7 @@ namespace WpfApiClient.Services
     {
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonOptions;
+        private readonly string baseApiRoute = "/wpf";
 
         private static readonly Dictionary<Type, string> EntityEndpoints = new()
         {
@@ -78,7 +80,7 @@ namespace WpfApiClient.Services
 
         public async Task<List<UserVideoListItemDto>> GetUserVideosAsync(int userId)
         {
-            var url = $"/wpf/get/user/videos?userId={userId}";
+            var url = $"{baseApiRoute}/get/user/videos?userId={userId}";
             var response = await _httpClient.GetAsync(url);
 
             response.EnsureSuccessStatusCode();
@@ -89,7 +91,7 @@ namespace WpfApiClient.Services
         public async Task<T> GetByIdAsync<T>(int id)
         {
             var entity = GetEntityEndpoint<T>();
-            var response = await _httpClient.GetAsync($"/wpf/get/{entity}/{id}");
+            var response = await _httpClient.GetAsync($"{baseApiRoute}/get/{entity}/{id}");
 
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<T>(_jsonOptions)
@@ -100,7 +102,7 @@ namespace WpfApiClient.Services
         {
             var entity = GetEntityEndpoint<T>();
             var response = await _httpClient.PostAsJsonAsync(
-                $"/wpf/add/{entity}", dto, _jsonOptions);
+                $"{baseApiRoute}/add/{entity}", dto, _jsonOptions);
 
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<AddRezult>(_jsonOptions);
@@ -113,7 +115,7 @@ namespace WpfApiClient.Services
         {
             var entity = GetEntityEndpoint<T>();
             var response = await _httpClient.PutAsJsonAsync(
-                $"/wpf/update/{entity}/{id}", dto, _jsonOptions);
+                $"{baseApiRoute}/update/{entity}/{id}", dto, _jsonOptions);
 
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<UpdateRezult>(_jsonOptions);
@@ -125,7 +127,7 @@ namespace WpfApiClient.Services
         public async Task<DeleteResult> DeleteAsync<T>(int id)
         {
             var entity = GetEntityEndpoint<T>();
-            var response = await _httpClient.DeleteAsync($"/wpf/delete/{entity}/{id}");
+            var response = await _httpClient.DeleteAsync($"{baseApiRoute}/delete/{entity}/{id}");
 
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<DeleteResult>(_jsonOptions);
@@ -137,7 +139,7 @@ namespace WpfApiClient.Services
         public async Task<UpdateRezult> ResetPasswordAsync(int userId, ForcedPasswordResetRequest request)
         {
             var response = await _httpClient.PutAsJsonAsync(
-                $"/wpf/reset/password/{userId}", request, _jsonOptions);
+                $"{baseApiRoute}/reset/password/{userId}", request, _jsonOptions);
 
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<UpdateRezult>(_jsonOptions);
@@ -149,7 +151,7 @@ namespace WpfApiClient.Services
         public async Task<int> GetCountAsync(string type, bool isAdmin = true)
         {
             var rolePath = isAdmin ? "admin" : "virifier";
-            var url = $"/wpf/{rolePath}/get/count?type={Uri.EscapeDataString(type)}";
+            var url = $"{baseApiRoute}/{rolePath}/get/count?type={Uri.EscapeDataString(type)}";
             var response = await _httpClient.GetAsync(url);
 
             response.EnsureSuccessStatusCode();
@@ -158,7 +160,7 @@ namespace WpfApiClient.Services
 
         public async Task<UpdateRezult> VerifyVideoAsync(int videoId)
         {
-            var response = await _httpClient.PutAsync($"/wpf/video/verify/{videoId}", null);
+            var response = await _httpClient.PutAsync($"{baseApiRoute}/video/verify/{videoId}", null);
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<UpdateRezult>(_jsonOptions);
             if (!result.Success)
@@ -166,17 +168,27 @@ namespace WpfApiClient.Services
             return result;
         }
 
-        public async Task<Stream> StreamVideoAsync(int videoId)
+        public async Task<Stream> StreamVideoAsync(int videoId, long? startByte)
         {
-            var response = await _httpClient.GetAsync($"/wpf/stream/{videoId}",
+            startByte = startByte ?? 0;
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{baseApiRoute}/stream/{videoId}");
+            request.Headers.Range = new RangeHeaderValue(startByte, null);
+            var response = await _httpClient.GetAsync($"{baseApiRoute}/stream/{videoId}",
                 HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStreamAsync();
         }
 
+        public async Task<long> GetLengthOfStream(int videoId)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{baseApiRoute}/stream/{videoId}");
+            var respose = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            return respose.Content.Headers.ContentLength ?? 0;
+        }
+
         public async Task<Stream> GetPosterAsync(int videoId)
         {
-            var response = await _httpClient.GetAsync($"/wpf/video/poster/{videoId}",
+            var response = await _httpClient.GetAsync($"{baseApiRoute}/video/poster/{videoId}",
                 HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStreamAsync();
