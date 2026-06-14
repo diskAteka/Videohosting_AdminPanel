@@ -81,7 +81,7 @@ namespace WpfApiClient.Services
 
         public async Task<List<UserVideoListItemDto>> GetUserVideosAsync(int userId)
         {
-            var url = $"{baseApiRoute}/get/user/videos?userId={userId}";
+            var url = $"{_apiBaseUrl}/get/user/videos?userId={userId}";
             var response = await _httpClient.GetAsync(url);
 
             response.EnsureSuccessStatusCode();
@@ -188,7 +188,7 @@ namespace WpfApiClient.Services
 
         public async Task<Stream> GetPosterAsync(int videoId)
         {
-            var response = await _httpClient.GetAsync($"{baseApiRoute}/video/poster/{videoId}",
+            var response = await _httpClient.GetAsync($"{_apiBaseUrl}/video/poster/{videoId}",
                 HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStreamAsync();

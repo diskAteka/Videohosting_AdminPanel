@@ -72,7 +72,7 @@ namespace VideohostingPanel.Services
 
         public async Task<Stream> StreamVideoAsync(int videoId)// Потоковое видео
         {
-            return await _apiClient.StreamVideoAsync(videoId);
+            return await _apiClient.GetStreamVideoAsync(videoId);
         }
 
         public async Task<Stream> GetPosterAsync(int videoId)// Получение постера видео

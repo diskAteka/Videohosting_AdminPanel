@@ -13,9 +13,12 @@
     <Page.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/VideohostingPanel;component/Resources/Styles.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/VideohostingPanel;component/Resources/Styles/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter"/>
+            <converters:MuteSoundConverter x:Key="MuteSoundConverter"/>
+            <converters:PlayPauseConvertor x:Key="PlayPauseConvertor"/>
         </ResourceDictionary>
     </Page.Resources>
 
@@ -100,50 +103,72 @@
                                 </Grid>
                             </Border>
 
-                            <!-- Видеоплеер -->
-                            <Border Background="{StaticResource DarkBackgroundBrush}" CornerRadius="15" Padding="0"
-                                    Margin="0,0,0,20" BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1"
-                                    MinHeight="300">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <MediaElement Grid.Row="0"
-                                                  Source="{Binding VideoStream}"
-                                                  LoadedBehavior="Manual" UnloadedBehavior="Stop"
-                                                  Stretch="Uniform" ScrubbingEnabled="True"
-                                                  x:Name="VideoPlayer"/>
-                                    <Border Grid.Row="1" Background="#CC000000" Padding="5" CornerRadius="0,0,15,15">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Button Grid.Column="0" Command="{Binding PlayPauseCommand}"
-                                                    Style="{StaticResource PlayerControlButtonStyle}">
-                                                <Image Source="{Binding PlayPauseIcon}" Width="16" Height="16"/>
-                                            </Button>
-                                            <TextBlock Grid.Column="1" Text="{Binding CurrentTime}" Foreground="White"
-                                                       VerticalAlignment="Center" Margin="5,0" FontSize="12"/>
-                                            <Slider Grid.Column="2" Value="{Binding VideoSliderPosition}" Minimum="0" Maximum="1"
-                                                    Style="{StaticResource VideoSliderStyle}" VerticalAlignment="Center" Margin="5,0"/>
-                                            <TextBlock Grid.Column="3" Text="{Binding TotalTime}" Foreground="White"
-                                                       VerticalAlignment="Center" Margin="5,0" FontSize="12"/>
-                                            <Button Grid.Column="4" Command="{Binding MuteCommand}"
-                                                    Style="{StaticResource PlayerControlButtonStyle}">
-                                                <Image Source="{Binding MuteIcon}" Width="16" Height="16"/>
-                                            </Button>
-                                            <Slider Grid.Column="5" Value="{Binding Volume}" Minimum="0" Maximum="1"
-                                                    Style="{StaticResource VideoSliderStyle}" Width="80" VerticalAlignment="Center" Margin="5,0"/>
-                                        </Grid>
-                                    </Border>
-                                </Grid>
-                            </Border>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <WindowsFormsHost Grid.Row="0" x:Name="VideoHost" 
+                                                Visibility="{Binding IsVideoLoading, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                    <!-- VLC плеер будет добавлен программно -->
+                                </WindowsFormsHost>
+                                <Border Grid.Row="0" Background="#80000000"
+                                        Visibility="{Binding IsVideoLoading, Converter={StaticResource BoolToVisibilityConverter}}">        
+                                    <StackPanel >
+                                        <ProgressBar IsIndeterminate="True" Height="5" Margin="0,0,0,0"/>
+                                        <TextBlock Text="Загрузка видео..." FontSize="18" HorizontalAlignment="Center" 
+                                                   Foreground="White" Margin="20"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Row="1" Background="{StaticResource DarkBackgroundBrush}" Padding="0"
+                                        Margin="0,0,0,20" BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <Border Grid.Row="1" Background="#CC000000" CornerRadius="0,0,15,15">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Button Grid.Column="0" Command="{Binding PlayPauseCommand}"
+                                                        Style="{StaticResource PlayerControlButtonStyle}">
+                                                    <Image Source="{Binding IsPause, Converter={StaticResource PlayPauseConvertor}}" Width="16" Height="16"/>
+                                                </Button>
+                                                <TextBlock Grid.Column="1" Text="{Binding CurrentTime}" Foreground="White"
+                                                            VerticalAlignment="Center" Margin="5,0" FontSize="12"/>
+                                                <Slider Grid.Column="2" 
+                                                        Value="{Binding VideoSliderPosition}" 
+                                                        Minimum="0" Maximum="1"
+                                                        Style="{StaticResource VideoSliderStyle}" 
+                                                        VerticalAlignment="Center" Margin="5,0"
+                                                        PreviewMouseDown="VideoSlider_PreviewMouseDown"
+                                                        PreviewMouseUp="VideoSlider_PreviewMouseUp"/>
+                                                <TextBlock Grid.Column="3" Text="{Binding TotalTime}" Foreground="White"
+                                                            VerticalAlignment="Center" Margin="5,0" FontSize="12"/>
+                                                <Button Grid.Column="4" Command="{Binding MuteCommand}"
+                                                        Style="{StaticResource PlayerControlButtonStyle}">
+                                                    <Image Source="{Binding IsMute, Converter={StaticResource MuteSoundConverter}}" Width="16" Height="16"/>
+                                                </Button>
+                                                <Slider Grid.Column="5" 
+                                                        Value="{Binding VolumeSliderPosition}" 
+                                                        Minimum="0" Maximum="1"
+                                                        Style="{StaticResource VideoSliderStyle}" 
+                                                        Width="80" VerticalAlignment="Center" Margin="5,0"
+                                                        ValueChanged="VolumeSlider_ValueChanged"/>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                            
 
                             <!-- Дополнительная информация -->
                             <Border Background="{StaticResource DarkTertiaryBrush}" CornerRadius="15" Padding="20" Margin="0,0,0,20">

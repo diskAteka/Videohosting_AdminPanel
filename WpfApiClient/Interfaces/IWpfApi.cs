@@ -40,7 +40,7 @@ namespace WpfApiClient.Interfaces
         #endregion
 
         #region Потоковое видео (GET)
-        Task<Stream> StreamVideoAsync(int videoId, long? startByte = null);
+        Task<Stream> GetStreamVideoAsync(int videoId, long? startByte = null);
         Task<long> GetVideoSizeAsync(int videoId);
 
         #endregion
