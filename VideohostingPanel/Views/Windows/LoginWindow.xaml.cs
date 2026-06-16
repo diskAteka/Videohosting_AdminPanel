@@ -1,21 +1,23 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
-using VideohostingPanel.Interfaces;
+using VideohostingPanel.ViewModels.WindowViewModels;
 
 namespace VideohostingPanel.Views.Windows
 {
-    public partial class LoginWindow : Window, IService
+    public partial class LoginWindow : Window
     {
-        public LoginWindow(IServiceProvider serviceProvider)
+        public LoginWindow(LoginViewModel viewModel)
         {
             InitializeComponent();
+            DataContext = viewModel;
         }
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left)
-                this.DragMove();
+            if (e.ButtonState == MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
         }
     }
 }

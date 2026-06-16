@@ -177,7 +177,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         {
             if (!int.TryParse(VideoSearchId, out int id))
             {
-                MessageBox.Show("Введите корректный ID видео", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ModernMessageBox.Show("Введите корректный ID видео", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -214,7 +214,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         {
             if (!int.TryParse(UserSearchId, out int id))
             {
-                MessageBox.Show("Введите корректный ID пользователя", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ModernMessageBox.Show("Введите корректный ID пользователя", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -232,13 +232,13 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                     }
                     else
                     {
-                        MessageBox.Show("Пользователь не найден в списке", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
+                        ModernMessageBox.Show("Пользователь не найден в списке", "Информация", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Пользователь не найден: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                ModernMessageBox.Show($"Пользователь не найден: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             finally
             {
