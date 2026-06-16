@@ -8,6 +8,7 @@ using System.Windows;
 using VideohostingPanel.Resources.Elements;
 using VideohostingPanel.Services;
 using VideohostingPanel.ViewModels.Base;
+using WpfApiClient.Config;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
 namespace VideohostingPanel.ViewModels.AddViewModels
@@ -99,10 +100,10 @@ namespace VideohostingPanel.ViewModels.AddViewModels
             {
                 var fileInfo = new FileInfo(openFileDialog.FileName);
 
-                if (fileInfo.Length > 2L * 1024 * 1024 * 1024)
+                if (fileInfo.Length > AppConfig.MAX_VIDEO_FILE_SIZE)
                 {
                     ModernMessageBox.Show(
-                        "Размер файла превышает 2 ГБ. Пожалуйста, выберите файл меньшего размера.",
+                        $"Размер файла превышает {AppConfig.MAX_VIDEO_FILE_SIZE } байт. Пожалуйста, выберите файл меньшего размера.",
                         "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
@@ -160,7 +161,7 @@ namespace VideohostingPanel.ViewModels.AddViewModels
 
                 if (!PosterIsSelected)
                 {
-                    Video.Poster = "/posters/default.jpg";
+                    Video.Poster = AppConfig.DEFAULT_POSTER_PATH;
                 }
                 else
                 {

@@ -9,13 +9,14 @@ using VideohostingPanel.Resources.Elements;
 using VideohostingPanel.Services;
 using VideohostingPanel.ViewModels.Base;
 using VideohostingPanel.Views.Windows;
+using WpfApiClient.Config;
 
 namespace VideohostingPanel.ViewModels.EditViewModels
 {
     public partial class EditUserViewModel : BaseViewModel
     {
         private ApiService _apiService;
-        private string emailRegex = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+        private string emailRegex = AppConfig.EMAIL_REGEX;
 
         #region Свйоства для разметки
 
@@ -107,9 +108,9 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         ModernMessageBox.Show("Укажите пароль пользователя", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
-                    if (Password.Length < 6 || Password.Length > 16)
+                    if (Password.Length < AppConfig.PASSWORD_MIN_LENGTH || Password.Length > AppConfig.PASSWORD_MAX_LENGTH)
                     {
-                        ModernMessageBox.Show("Некорректная длина пароля (от 6 до 16 символов)", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        ModernMessageBox.Show($"Некорректная длина пароля (от {AppConfig.PASSWORD_MIN_LENGTH} до {AppConfig.PASSWORD_MAX_LENGTH} символов)", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
                     }
                     var newUserRequest = new PostUserRequest

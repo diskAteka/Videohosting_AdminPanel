@@ -1,13 +1,14 @@
-﻿using System.IO;
-using System.Windows.Media.Imaging;
-using System.Windows.Threading;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SharedLib.Contracts.Admin;
+using System.IO;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using VideohostingPanel.Services;
 using VideohostingPanel.ViewModels.Base;
 using Vlc.DotNet.Core;
 using Vlc.DotNet.Forms;
+using WpfApiClient.Config;
 
 namespace VideohostingPanel.ViewModels.VerifyViewModels
 {
@@ -266,9 +267,9 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         {
             _vlcPlayer = vlcPlayer;
 
-            // Настройка VLC
-            _vlcPlayer.VlcLibDirectory = new System.IO.DirectoryInfo(
-                System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "libvlc", "win-x64"));
+            _vlcPlayer.VlcLibDirectory = new DirectoryInfo(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
+                AppConfig.VLC_LIB_DIRECTORY));
 
             _vlcPlayer.VlcMediaplayerOptions = new string[]
             {

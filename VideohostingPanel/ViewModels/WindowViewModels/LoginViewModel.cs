@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http;
+using WpfApiClient.Config;
 using VideohostingPanel.Services;
 using VideohostingPanel.ViewModels.Base;
 using VideohostingPanel.Views.Windows;
@@ -15,15 +16,10 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         private readonly AuthApiService _authApiService;
         private readonly IServiceProvider _serviceProvider;
 
-        // Пути для тестирования (можно менять в начале класса)
-        private const string DEFAULT_SERVER = "localhost";
-        private const string DEFAULT_PORT = "5001";
-
         [ObservableProperty]
-        private string _serverAddress = DEFAULT_SERVER;
-
+        private string _serverAddress = AppConfig.DEFAULT_SERVER;
         [ObservableProperty]
-        private string _port = DEFAULT_PORT;
+        private string _port = AppConfig.DEFAULT_PORT;
 
         [ObservableProperty]
         private string _userName = string.Empty;

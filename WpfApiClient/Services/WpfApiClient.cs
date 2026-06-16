@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using WpfApiClient.Interfaces;
 using System.Net.Http.Headers;
+using WpfApiClient.Config;
 
 namespace WpfApiClient.Services
 {
@@ -13,7 +14,7 @@ namespace WpfApiClient.Services
     {
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonOptions;
-        private readonly string _apiBaseUrl = "/wpf";
+        private readonly string _apiBaseUrl = AppConfig.WPF_PREFIX;
 
 
         private static readonly Dictionary<Type, string> EntityEndpoints = new()

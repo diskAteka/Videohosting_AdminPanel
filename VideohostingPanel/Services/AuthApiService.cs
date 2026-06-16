@@ -1,4 +1,5 @@
 ﻿using System.Net.Http;
+using WpfApiClient.Config;
 
 namespace VideohostingPanel.Services
 {
@@ -10,10 +11,6 @@ namespace VideohostingPanel.Services
         private readonly HttpClient _httpClient;
         private readonly AuthTokenHandler _tokenHandler;
 
-        public const string WPF_PREFIX = "/wpf";
-        public const string API_PREFIX = "/api";
-        public const string AUTH_PATH = "/api/auth/login";
-
         public AuthApiService(HttpClient httpClient, AuthTokenHandler tokenHandler)
         {
             _httpClient = httpClient;
@@ -22,7 +19,7 @@ namespace VideohostingPanel.Services
 
         public void SetBaseUrl(string serverAddress, string port)
         {
-            var baseUrl = $"https://{serverAddress}:{port}";
+            var baseUrl = AppConfig.BuildBaseUrl(serverAddress, port);
             _httpClient.BaseAddress = new Uri(baseUrl);
         }
 
