@@ -16,7 +16,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/VideohostingPanel;component/Resources/Styles.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/VideohostingPanel;component/Resources/Styles/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <BooleanToVisibilityConverter x:Key="BoolToVis"/>
@@ -71,7 +71,7 @@
             </Rectangle.Fill>
         </Rectangle>
 
-        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden"/>
+        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" Visibility="Collapsed"/>
 
         <Grid Margin="10">
             <Grid.RowDefinitions>
@@ -260,7 +260,7 @@
                                         </Grid>
                                     </Border>
 
-                                    <!-- Выпадающий список типов логов (виден только для ServerLog) -->
+                                    <!-- Выпадающий список типов логов -->
                                     <ComboBox ItemsSource="{Binding LogTypes}"
                                               SelectedItem="{Binding SelectedLogType}"
                                               Style="{StaticResource BaseComboBoxStyle}"

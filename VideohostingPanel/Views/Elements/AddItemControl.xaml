@@ -17,10 +17,8 @@
     <Border Background="{StaticResource DarkTertiaryBrush}"
             CornerRadius="15" Margin="0,0,0,15"
             BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1"
-            Cursor="Hand">
-        <Border.InputBindings>
-            <MouseBinding MouseAction="LeftClick" Command="{Binding AddNewRecordCommand}"/>
-        </Border.InputBindings>
+            Cursor="Hand" MouseLeftButtonUp="Border_Click">
+
         <Border.RenderTransform>
             <ScaleTransform ScaleX="1" ScaleY="1"/>
         </Border.RenderTransform>
