@@ -21,8 +21,4 @@
     <Resource Include="Libs\SharedLib.dll" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DI\" />
-  </ItemGroup>
-
 </Project>

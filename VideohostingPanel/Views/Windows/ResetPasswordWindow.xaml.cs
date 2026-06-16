@@ -3,6 +3,9 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using VideohostingPanel.Resources.Elements;
+using Application = System.Windows.Application;
+using Point = System.Windows.Point;
 
 namespace VideohostingPanel.Views.Windows
 {
@@ -99,7 +102,7 @@ namespace VideohostingPanel.Views.Windows
             // Здесь должна быть логика сброса пароля
             // Например: UserService.ResetPassword(UserId, NewPassword);
 
-            MessageBox.Show($"Пароль для пользователя {UserName} успешно изменен!",
+            ModernMessageBox.Show($"Пароль для пользователя {UserName} успешно изменен!",
                             "Успех",
                             MessageBoxButton.OK,
                             MessageBoxImage.Information);
@@ -178,7 +181,7 @@ namespace VideohostingPanel.Views.Windows
         private void ShowError(string message)
         {
             // Здесь можно использовать кастомный MessageBox
-            MessageBox.Show(message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            ModernMessageBox.Show(message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         /// <summary>

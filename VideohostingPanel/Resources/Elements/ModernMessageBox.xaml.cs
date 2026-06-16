@@ -6,6 +6,10 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using Button = System.Windows.Controls.Button;
+using Color = System.Windows.Media.Color;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
+using Point = System.Windows.Point;
 
 namespace VideohostingPanel.Resources.Elements
 {
@@ -93,8 +97,8 @@ namespace VideohostingPanel.Resources.Elements
                 FontSize = 24,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0x00, 0x00)),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                VerticalAlignment = System.Windows.VerticalAlignment.Center
             };
 
             fallbackText.Text = icon switch

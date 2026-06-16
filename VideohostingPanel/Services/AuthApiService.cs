@@ -1,6 +1,4 @@
 ﻿using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text.Json;
 
 namespace VideohostingPanel.Services
 {
@@ -28,16 +26,10 @@ namespace VideohostingPanel.Services
             _httpClient.BaseAddress = new Uri(baseUrl);
         }
 
-        public void SetToken(string? token)
-        {
-            _tokenHandler.SetToken(token);
-        }
+        public void SetToken(string? token) => _tokenHandler.SetToken(token);
 
         public bool HasToken => _tokenHandler.HasToken;
 
-        public void ClearAuth()
-        {
-            _tokenHandler.SetToken(null);
-        }
+        public void ClearAuth() => _tokenHandler.SetToken(null);
     }
 }

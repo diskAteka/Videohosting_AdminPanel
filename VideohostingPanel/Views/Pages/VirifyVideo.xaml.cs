@@ -43,5 +43,10 @@ namespace VideohostingPanel.Views.Pages
         {
             _viewModel?.Cleanup();
         }
+
+        private void VolumeSlider_ValueChanged(object sender, System.Windows.RoutedPropertyChangedEventArgs<double> e)
+        {
+
+        }
     }
 }

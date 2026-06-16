@@ -7,23 +7,16 @@ namespace VideohostingPanel.Services
     {
         private string? _token;
 
-        public void SetToken(string? token)
-        {
-            _token = token;
-        }
-
+        public void SetToken(string? token) => _token = token;
         public bool HasToken => !string.IsNullOrEmpty(_token);
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(_token))
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
-
             var response = await base.SendAsync(request, cancellationToken);
-
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 OnTokenExpired?.Invoke();
-
             return response;
         }
 

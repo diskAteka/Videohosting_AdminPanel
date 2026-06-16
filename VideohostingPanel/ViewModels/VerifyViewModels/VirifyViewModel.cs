@@ -1,13 +1,9 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.IO;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SharedLib.Contracts.Admin;
-using SharedLib.Models;
 using VideohostingPanel.Services;
 using VideohostingPanel.ViewModels.Base;
 using Vlc.DotNet.Core;
@@ -65,6 +61,8 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
 
         #endregion
 
+        #region Конструктор
+
         public VerifyVideoViewModel(ApiService apiService)
         {
             _apiService = apiService;
@@ -75,29 +73,9 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
             _updateTimer.Tick += UpdateTimer_Tick;
         }
 
-        public void InitializeVlcPlayer(VlcControl vlcPlayer)
-        {
-            _vlcPlayer = vlcPlayer;
+        #endregion
 
-            // Настройка VLC
-            _vlcPlayer.VlcLibDirectory = new System.IO.DirectoryInfo(
-                System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "libvlc", "win-x64"));
-
-            _vlcPlayer.VlcMediaplayerOptions = new string[]
-            {
-                "--network-caching=3000",  // Буферизация сети
-                "--no-video-title-show",
-                "--no-snapshot-preview"
-            };
-
-            // Подписка на события плеера
-            _vlcPlayer.Playing += VlcPlayer_Playing;
-            _vlcPlayer.Paused += VlcPlayer_Paused;
-            _vlcPlayer.Stopped += VlcPlayer_Stopped;
-            _vlcPlayer.TimeChanged += VlcPlayer_TimeChanged;
-            _vlcPlayer.LengthChanged += VlcPlayer_LengthChanged;
-            _vlcPlayer.EndReached += VlcPlayer_EndReached;
-        }
+        #region Команды
 
         [RelayCommand]
         public async Task LoadVideo()
@@ -204,6 +182,8 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
             OnGoBackRequested?.Invoke();
         }
 
+        #endregion
+
         #region Навигация
 
         public event Action? OnGoBackRequested;
@@ -281,24 +261,30 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
 
         #endregion
 
-        public void Cleanup()
-        {
-            _updateTimer?.Stop();
-            if (_vlcPlayer != null)
-            {
-                _vlcPlayer.Playing -= VlcPlayer_Playing;
-                _vlcPlayer.Paused -= VlcPlayer_Paused;
-                _vlcPlayer.Stopped -= VlcPlayer_Stopped;
-                _vlcPlayer.TimeChanged -= VlcPlayer_TimeChanged;
-                _vlcPlayer.LengthChanged -= VlcPlayer_LengthChanged;
-                _vlcPlayer.EndReached -= VlcPlayer_EndReached;
-
-                _vlcPlayer.Stop();
-                _vlcPlayer.Dispose();
-            }
-        }
-
         #region Вспомогательные методы
+        public void InitializeVlcPlayer(VlcControl vlcPlayer)
+        {
+            _vlcPlayer = vlcPlayer;
+
+            // Настройка VLC
+            _vlcPlayer.VlcLibDirectory = new System.IO.DirectoryInfo(
+                System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "libvlc", "win-x64"));
+
+            _vlcPlayer.VlcMediaplayerOptions = new string[]
+            {
+                "--network-caching=3000",  // Буферизация сети
+                "--no-video-title-show",
+                "--no-snapshot-preview"
+            };
+
+            // Подписка на события плеера
+            _vlcPlayer.Playing += VlcPlayer_Playing;
+            _vlcPlayer.Paused += VlcPlayer_Paused;
+            _vlcPlayer.Stopped += VlcPlayer_Stopped;
+            _vlcPlayer.TimeChanged += VlcPlayer_TimeChanged;
+            _vlcPlayer.LengthChanged += VlcPlayer_LengthChanged;
+            _vlcPlayer.EndReached += VlcPlayer_EndReached;
+        }
 
         private async Task LoadImageAsync(Stream stream)
         {
@@ -314,6 +300,23 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
             });
 
             PosterImageSource = bitmapImage;
+        }
+
+        public void Cleanup()
+        {
+            _updateTimer?.Stop();
+            if (_vlcPlayer != null)
+            {
+                _vlcPlayer.Playing -= VlcPlayer_Playing;
+                _vlcPlayer.Paused -= VlcPlayer_Paused;
+                _vlcPlayer.Stopped -= VlcPlayer_Stopped;
+                _vlcPlayer.TimeChanged -= VlcPlayer_TimeChanged;
+                _vlcPlayer.LengthChanged -= VlcPlayer_LengthChanged;
+                _vlcPlayer.EndReached -= VlcPlayer_EndReached;
+
+                _vlcPlayer.Stop();
+                _vlcPlayer.Dispose();
+            }
         }
 
         #endregion

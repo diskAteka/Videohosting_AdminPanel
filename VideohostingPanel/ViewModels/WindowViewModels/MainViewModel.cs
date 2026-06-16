@@ -13,6 +13,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         private readonly ApiService _apiService;
         private readonly AuthApiService _authApiService;
         private readonly IServiceProvider _serviceProvider;
+        private readonly AuthTokenHandler _tokenHandler;
 
         private const string WPF_PREFIX = "/wpf";
 
@@ -22,29 +23,24 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         public MainViewModel(
             ApiService apiService,
             AuthApiService authApiService,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider,
+            AuthTokenHandler tokenHandler)
         {
             _apiService = apiService;
             _authApiService = authApiService;
             _serviceProvider = serviceProvider;
             Title = "Панель администратора";
+            _tokenHandler = tokenHandler;
+            _tokenHandler.OnTokenExpired += () => { Application.Current.Dispatcher.BeginInvoke(() => Logout()); };
         }
 
         [RelayCommand]
         private void Logout()
         {
-            // Сбрасываем токен
             _authApiService.ClearAuth();
-
-            // Открываем окно входа
             var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
             loginWindow.Show();
-
-            // Закрываем главное окно
-            Application.Current.Windows
-                .OfType<MainWindow>()
-                .FirstOrDefault()?
-                .Close();
+            Application.Current.Windows.OfType<MainWindow>().FirstOrDefault()?.Close();
         }
     }
 }

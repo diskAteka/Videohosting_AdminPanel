@@ -8,6 +8,7 @@ using System.Windows;
 using VideohostingPanel.Resources.Elements;
 using VideohostingPanel.Services;
 using VideohostingPanel.ViewModels.Base;
+using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
 namespace VideohostingPanel.ViewModels.AddViewModels
 {
