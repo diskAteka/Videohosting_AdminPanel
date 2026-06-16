@@ -41,4 +41,10 @@
         Verifier
     }
 
+    public enum NavigationAction
+    {
+        Create,
+        Edit,
+        Back
+    }
 }
