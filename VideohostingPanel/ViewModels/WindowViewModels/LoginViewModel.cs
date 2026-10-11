@@ -13,7 +13,8 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
     public partial class LoginViewModel : BaseViewModel
     {
         private readonly AuthService _authService;
-        private readonly AuthApiService _authApiService;
+        private readonly ApiService _apiService;
+        private readonly AuthTokenHandler _tokenHandler;
         private readonly IServiceProvider _serviceProvider;
 
         [ObservableProperty]
@@ -35,11 +36,13 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
 
         public LoginViewModel(
             AuthService authService,
-            AuthApiService authApiService,
+            ApiService apiService,
+            AuthTokenHandler tokenHandler,
             IServiceProvider serviceProvider)
         {
             _authService = authService;
-            _authApiService = authApiService;
+            _apiService = apiService;
+            _tokenHandler = tokenHandler;
             _serviceProvider = serviceProvider;
             Title = "Вход в систему";
         }
@@ -52,11 +55,9 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                 IsBusy = true;
                 IsErrorVisible = false;
 
-                // Формируем базовый URL из адреса и порта
+                // Применяем адрес и порт ко всем API-запросам
+                _apiService.SetBaseUrl(ServerAddress, Port);
                 var baseUrl = AppConfig.BuildBaseUrl(ServerAddress, Port);
-
-                // Настраиваем базовый URL для всех API-клиентов
-                _authApiService.SetBaseUrl(ServerAddress, Port);
 
                 // Получаем токен через сервис аутентификации
                 var loginResponse = await _authService.LoginAsync(baseUrl, UserName, Password);
@@ -68,7 +69,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                 }
 
                 // Сохраняем токен в обработчик
-                _authApiService.SetToken(loginResponse.Token);
+                _tokenHandler.SetToken(loginResponse.Token);
 
                 // Открываем главное окно
                 var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();

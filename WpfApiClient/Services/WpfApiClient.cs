@@ -49,6 +49,11 @@ namespace WpfApiClient.Services
             };
         }
 
+        public void SetBaseUrl(string server, string port)
+        {
+            _httpClient.BaseAddress = new Uri(AppConfig.BuildBaseUrl(server, port));
+        }
+
         private string GetEntityEndpoint<T>()
         {
             if (EntityEndpoints.TryGetValue(typeof(T), out var endpoint))

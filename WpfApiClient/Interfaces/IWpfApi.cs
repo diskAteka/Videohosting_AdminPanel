@@ -6,6 +6,10 @@ namespace WpfApiClient.Interfaces
 {
     public interface IWpfApi
     {
+        #region Конфигурация
+        void SetBaseUrl(string server, string port);
+        #endregion
+
         #region Списки (GET)
         Task<List<T>> GetListAsync<T>(int page = 1, int pageSize = 20, string? sortBy = null, bool sortAscending = true);
         Task<List<UserVideoListItemDto>> GetUserVideosAsync(int userId);

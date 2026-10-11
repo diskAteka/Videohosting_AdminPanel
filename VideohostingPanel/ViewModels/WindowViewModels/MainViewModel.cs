@@ -25,7 +25,6 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
     public partial class MainViewModel : BaseViewModel
     {
         private readonly ApiService _apiService;
-        private readonly AuthApiService _authApiService;
         private readonly IServiceProvider _serviceProvider;
         private readonly AuthTokenHandler _tokenHandler;
 
@@ -117,12 +116,10 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
 
         public MainViewModel(
             ApiService apiService,
-            AuthApiService authApiService,
             IServiceProvider serviceProvider,
             AuthTokenHandler tokenHandler)
         {
             _apiService = apiService;
-            _authApiService = authApiService;
             _serviceProvider = serviceProvider;
             _tokenHandler = tokenHandler;
             Title = "Видеохостинг - Панель управления";
@@ -560,7 +557,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         [RelayCommand]
         private void Logout()
         {
-            _authApiService.ClearAuth();
+            _tokenHandler.SetToken(null);
             var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
             loginWindow.Show();
             Application.Current.Windows.OfType<MainWindow>().FirstOrDefault()?.Close();

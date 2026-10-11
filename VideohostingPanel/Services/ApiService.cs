@@ -1,7 +1,6 @@
 ﻿using SharedLib.Contracts.Admin;
 using SharedLib.Contracts.Response.Video;
 using SharedLib.Contracts.RezultModels;
-using SharedLib.Interfaces;
 using System.IO;
 using WpfApiClient.Interfaces;
 
@@ -14,6 +13,12 @@ namespace VideohostingPanel.Services
         public ApiService(IWpfApi apiClient)
         {
             _apiClient = apiClient;
+        }
+
+        // Применение адреса и порта сервера ко всем последующим запросам
+        public void SetBaseUrl(string server, string port)
+        {
+            _apiClient.SetBaseUrl(server, port);
         }
 
         // Получение списка
@@ -85,14 +90,5 @@ namespace VideohostingPanel.Services
         {
             return await _apiClient.GetPosterAsync(videoId);
         }
-
-        private async Task<AddRezult> LogAsync<T>(IRezult resultModel) where T : class, IModel
-        {
-            throw new NotImplementedException();
-            // Здесь будет логика логирования всех операций сотрудников.
-            // Нужно получить информацию о текущем сотруднике из глобального контекста.
-            // Метод будет принимать тип сущности, над которой выполняется операция, и результат операции.
-            // После чего метод соберет ответ, добавит в него Id сотрудника и отправит на сервер для сохранения в базе данных.
-        }//Метод для логирования действий сотрудников. Он будет вызываться в других методах этого класса.
     }
 }
