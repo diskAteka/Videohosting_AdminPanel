@@ -53,7 +53,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                 IsErrorVisible = false;
 
                 // Формируем базовый URL из адреса и порта
-                var baseUrl = $"https://{ServerAddress}:{Port}";
+                var baseUrl = AppConfig.BuildBaseUrl(ServerAddress, Port);
 
                 // Настраиваем базовый URL для всех API-клиентов
                 _authApiService.SetBaseUrl(ServerAddress, Port);

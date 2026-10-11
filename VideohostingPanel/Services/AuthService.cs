@@ -1,4 +1,5 @@
-﻿using SharedLib.Contracts.Response.Auth;
+﻿using SharedLib.Contracts.Admin;
+using SharedLib.Contracts.Response.Auth;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -20,7 +21,7 @@ namespace VideohostingPanel.Services
             };
         }
 
-        public async Task<LoginResponse> LoginAsync(string baseUrl, string username, string password)
+        public async Task<TokenResponse> LoginAsync(string baseUrl, string username, string password)
         {    
             using var httpClient = new HttpClient
             {
@@ -28,17 +29,17 @@ namespace VideohostingPanel.Services
                 Timeout = TimeSpan.FromSeconds(TIMEOUT_SECONDS)
             };
 
-            var request = new
+            var request = new EmployeeLoginRequest
             {
-                username = username,
-                password = password
+                Username = username,
+                Password = password
             };
 
             var response = await httpClient.PostAsJsonAsync(AUTH_PATH, request, _jsonOptions);
             response.EnsureSuccessStatusCode();
 
             var loginResponse = await response.Content
-                .ReadFromJsonAsync<LoginResponse>(_jsonOptions);
+                .ReadFromJsonAsync<TokenResponse>(_jsonOptions);
 
             return loginResponse
                 ?? throw new InvalidOperationException("Не удалось получить ответ от сервера");

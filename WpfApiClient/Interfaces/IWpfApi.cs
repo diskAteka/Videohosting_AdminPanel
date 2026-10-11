@@ -9,6 +9,7 @@ namespace WpfApiClient.Interfaces
         #region Списки (GET)
         Task<List<T>> GetListAsync<T>(int page = 1, int pageSize = 20, string? sortBy = null, bool sortAscending = true);
         Task<List<UserVideoListItemDto>> GetUserVideosAsync(int userId);
+        Task<List<GetVideoResponse>> GetUnverifiedVideosAsync(int page = 1, int pageSize = 20);
         #endregion
 
         #region Получение по ID (GET)
@@ -40,9 +41,7 @@ namespace WpfApiClient.Interfaces
         #endregion
 
         #region Потоковое видео (GET)
-        Task<Stream> GetStreamVideoAsync(int videoId, long? startByte = null);
-        Task<long> GetVideoSizeAsync(int videoId);
-
+        Task<string> GetStreamUrlAsync(int videoId);
         #endregion
 
         #region Постер видео (GET)

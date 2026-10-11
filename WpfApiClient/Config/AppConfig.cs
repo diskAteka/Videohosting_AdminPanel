@@ -15,8 +15,8 @@ namespace WpfApiClient.Config
         // ========== Параметры сервера по умолчанию ==========
         // Отображаются в полях LoginWindow при запуске
         public const string DEFAULT_SERVER = "localhost";
-        public const string DEFAULT_PORT = "5001";
-        public const string DEFAULT_SCHEME = "https";
+        public const string DEFAULT_PORT = "5000";
+        public const string DEFAULT_SCHEME = "http";
 
         // ========== Таймауты ==========
         public const int AUTH_TIMEOUT_SECONDS = 10;
@@ -27,8 +27,8 @@ namespace WpfApiClient.Config
         public const string WPF_PREFIX = "/wpf";
         public const string API_PREFIX = "/api";
 
-        // Аутентификация
-        public const string AUTH_PATH = "/api/auth/login";
+        // Аутентификация (вход сотрудника/администратора)
+        public const string AUTH_PATH = "/wpf/login";
 
         // ========== Параметры загрузки видео ==========
         public const long MAX_VIDEO_FILE_SIZE = 2L * 1024 * 1024 * 1024; // 2 ГБ

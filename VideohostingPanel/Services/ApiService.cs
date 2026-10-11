@@ -65,14 +65,20 @@ namespace VideohostingPanel.Services
             return await _apiClient.GetUserVideosAsync(userId);
         }
 
+        // Получение списка неверифицированных видео (для верификатора)
+        public async Task<List<GetVideoResponse>> GetUnverifiedVideosAsync(int page = 1, int pageSize = 20)
+        {
+            return await _apiClient.GetUnverifiedVideosAsync(page, pageSize);
+        }
+
         public async Task<UpdateRezult> VerifyVideoAsync(int videoId)// Верификация видео
         {
             return await _apiClient.VerifyVideoAsync(videoId);
         }
 
-        public async Task<Stream> StreamVideoAsync(int videoId)// Потоковое видео
+        public async Task<string> GetStreamUrlAsync(int videoId)// URL видеопотока из хранилища
         {
-            return await _apiClient.GetStreamVideoAsync(videoId);
+            return await _apiClient.GetStreamUrlAsync(videoId);
         }
 
         public async Task<Stream> GetPosterAsync(int videoId)// Получение постера видео

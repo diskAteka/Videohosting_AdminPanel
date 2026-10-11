@@ -90,6 +90,16 @@ namespace WpfApiClient.Services
             return result ?? new List<UserVideoListItemDto>();
         }
 
+        public async Task<List<GetVideoResponse>> GetUnverifiedVideosAsync(int page = 1, int pageSize = 20)
+        {
+            var url = $"{_apiBaseUrl}/virifier/videos?Page={page}&PageSize={pageSize}";
+            var response = await _httpClient.GetAsync(url);
+
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadFromJsonAsync<List<GetVideoResponse>>(_jsonOptions);
+            return result ?? new List<GetVideoResponse>();
+        }
+
         public async Task<T> GetByIdAsync<T>(int id)
         {
             var entity = GetEntityEndpoint<T>();
@@ -170,21 +180,16 @@ namespace WpfApiClient.Services
             return result;
         }
 
-        public async Task<Stream> GetStreamVideoAsync(int videoId, long? startByte = null)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{_apiBaseUrl}/stream/{videoId}");
-            if(startByte != null)
-                request.Headers.Range = new RangeHeaderValue(startByte.Value, null);
-            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadAsStreamAsync();
-        }
-
-        public async Task<long> GetVideoSizeAsync(int videoId)
+        public async Task<string> GetStreamUrlAsync(int videoId)
         {
             var response = await _httpClient.GetAsync($"{_apiBaseUrl}/stream/{videoId}");
-            long size = response.Content.Headers.ContentLength ?? 0;
-            return size;
+            response.EnsureSuccessStatusCode();
+
+            var url = await response.Content.ReadFromJsonAsync<string>(_jsonOptions);
+            if (string.IsNullOrWhiteSpace(url))
+                throw new InvalidOperationException("Сервер не вернул URL видеопотока");
+
+            return url;
         }
 
         public async Task<Stream> GetPosterAsync(int videoId)

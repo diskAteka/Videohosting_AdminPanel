@@ -86,9 +86,10 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
                 if (!string.IsNullOrEmpty(Video.Poster))
                     await LoadImageAsync(await _apiService.GetPosterAsync(Video.Id));
 
-                if (_vlcPlayer != null && !string.IsNullOrEmpty(Video.Link))
+                if (_vlcPlayer != null)
                 {
-                    _vlcPlayer.Play(new Uri(Video.Link));
+                    var streamUrl = await _apiService.GetStreamUrlAsync(Video.Id);
+                    _vlcPlayer.Play(new Uri(streamUrl));
                 }
             }
             catch (Exception ex)

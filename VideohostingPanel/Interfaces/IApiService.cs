@@ -1,5 +1,7 @@
-﻿using SharedLib.Contracts.Response.Video;
+﻿using SharedLib.Contracts.Admin;
+using SharedLib.Contracts.Response.Video;
 using SharedLib.Contracts.RezultModels;
+using System.IO;
 
 namespace VideohostingPanel.Interfaces
 {
@@ -18,5 +20,13 @@ namespace VideohostingPanel.Interfaces
         public Task<int> GetCountAsync(string type, bool isAdmin = true);
 
         public Task<List<UserVideoListItemDto>> GetUserVideosAsync(int userId);
+
+        public Task<List<GetVideoResponse>> GetUnverifiedVideosAsync(int page = 1, int pageSize = 20);
+
+        public Task<UpdateRezult> VerifyVideoAsync(int videoId);
+
+        public Task<string> GetStreamUrlAsync(int videoId);
+
+        public Task<Stream> GetPosterAsync(int videoId);
     }
 }

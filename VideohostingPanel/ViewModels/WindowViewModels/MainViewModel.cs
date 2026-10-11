@@ -131,8 +131,55 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
             _tokenHandler.OnTokenExpired += () =>
                 Application.Current.Dispatcher.BeginInvoke(() => Logout());
 
-            // Инициализация таблиц
-            InitializeTables();
+            // Настройка интерфейса в зависимости от роли сотрудника
+            ApplyUserRole();
+        }
+        #endregion
+
+        #region Роль пользователя
+
+        private void ApplyUserRole()
+        {
+            var role = _tokenHandler.Role;
+
+            if (string.Equals(role, "Virifier", StringComparison.OrdinalIgnoreCase))
+            {
+                IsAdmin = false;
+                IsVerifier = true;
+                UserDisplayName = _tokenHandler.UserName ?? "Верификатор";
+                _ = LoadUnverifiedVideosAsync();
+            }
+            else
+            {
+                IsAdmin = true;
+                IsVerifier = false;
+                UserDisplayName = _tokenHandler.UserName ?? "Администратор";
+
+                // Инициализация таблиц (запускает загрузку данных администратора)
+                InitializeTables();
+            }
+        }
+
+        private async Task LoadUnverifiedVideosAsync()
+        {
+            try
+            {
+                IsBusy = true;
+                UnverifiedVideos.Clear();
+
+                var videos = await _apiService.GetUnverifiedVideosAsync(1, 100);
+                foreach (var video in videos)
+                    UnverifiedVideos.Add(new UnverifiedVideoItemControl { DataContext = video });
+            }
+            catch (Exception ex)
+            {
+                ModernMessageBox.Show($"Ошибка загрузки: {ex.Message}",
+                    "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
         #endregion
 
@@ -499,7 +546,11 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
             HideModalPage();
             // Небольшая задержка, чтобы UI успел скрыть фрейм до начала загрузки
             await System.Threading.Tasks.Task.Delay(100);
-            await LoadRecordsCommand.ExecuteAsync(null);
+
+            if (IsVerifier)
+                await LoadUnverifiedVideosAsync();
+            else
+                await LoadRecordsCommand.ExecuteAsync(null);
         }
 
         #endregion
