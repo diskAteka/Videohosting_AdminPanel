@@ -90,7 +90,7 @@
                             <StackPanel Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}" >
                                 <TextBlock Text="Пароль (6-16 символов) *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                                 <PasswordBox Style="{StaticResource BasePasswordBoxStyle}" Margin="0,0,0,15" Padding="5"                                            
-                                             services:PasswordBoxHelper.BindPassword="{Binding Password}"/>
+                                             services:PasswordBoxHelper.BindPassword="{Binding Password, Mode=TwoWay}"/>
                             </StackPanel>
 
 

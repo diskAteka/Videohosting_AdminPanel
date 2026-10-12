@@ -16,7 +16,13 @@ namespace VideohostingPanel.Views.Windows
         {
             if (e.ButtonState == MouseButtonState.Pressed)
             {
-                DragMove();
+                try
+                {
+                    DragMove();
+                }
+                catch (System.InvalidOperationException)
+                {
+                }
             }
         }
     }

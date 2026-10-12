@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace VideohostingPanel.Services
 {
@@ -7,26 +8,61 @@ namespace VideohostingPanel.Services
     {
         public static readonly DependencyProperty BindPasswordProperty =
             DependencyProperty.RegisterAttached("BindPassword", typeof(string), typeof(PasswordBoxHelper),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnBindPasswordChanged));
+                new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnBindPasswordChanged));
 
-        public static string GetBindPassword(DependencyObject obj) => (string)obj.GetValue(BindPasswordProperty);
-        public static void SetBindPassword(DependencyObject obj, string value) => obj.SetValue(BindPasswordProperty, value);
+        private static readonly DependencyProperty IsUpdatingProperty =
+            DependencyProperty.RegisterAttached("IsUpdating", typeof(bool), typeof(PasswordBoxHelper),
+                new PropertyMetadata(false));
+
+        static PasswordBoxHelper()
+        {
+            // Класс-обработчик срабатывает для ВСЕХ PasswordBox, даже если
+            // OnBindPasswordChanged не был вызван (например, когда исходное
+            // значение совпадает со значением по умолчанию).
+            EventManager.RegisterClassHandler(
+                typeof(PasswordBox),
+                PasswordBox.PasswordChangedEvent,
+                new RoutedEventHandler(OnPasswordBoxPasswordChanged));
+        }
+
+        public static string? GetBindPassword(DependencyObject obj) => (string?)obj.GetValue(BindPasswordProperty);
+        public static void SetBindPassword(DependencyObject obj, string? value) => obj.SetValue(BindPasswordProperty, value);
 
         private static void OnBindPasswordChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is PasswordBox passwordBox)
+            if (d is not PasswordBox passwordBox || (bool)passwordBox.GetValue(IsUpdatingProperty))
+                return;
+
+            passwordBox.SetValue(IsUpdatingProperty, true);
+
+            if (e.NewValue is string newPassword && passwordBox.Password != newPassword)
             {
-                passwordBox.PasswordChanged -= PasswordBox_PasswordChanged;
-                if (e.NewValue != null && passwordBox.Password != (string)e.NewValue)
-                    passwordBox.Password = (string)e.NewValue;
-                passwordBox.PasswordChanged += PasswordBox_PasswordChanged;
+                DebugLog.Write($"PasswordBox: источник -> PasswordBox (len={newPassword.Length})");
+                passwordBox.Password = newPassword;
             }
+
+            passwordBox.SetValue(IsUpdatingProperty, false);
         }
 
-        private static void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        private static void OnPasswordBoxPasswordChanged(object sender, RoutedEventArgs e)
         {
-            if (sender is PasswordBox passwordBox)
-                SetBindPassword(passwordBox, passwordBox.Password);
+            if (sender is not PasswordBox passwordBox || (bool)passwordBox.GetValue(IsUpdatingProperty))
+                return;
+
+            var binding = BindingOperations.GetBindingExpression(passwordBox, BindPasswordProperty);
+            if (binding == null)
+            {
+                DebugLog.Write("PasswordBox: PasswordChanged, но привязка BindPassword отсутствует");
+                return;
+            }
+
+            passwordBox.SetValue(IsUpdatingProperty, true);
+            passwordBox.SetCurrentValue(BindPasswordProperty, passwordBox.Password);
+            passwordBox.SetValue(IsUpdatingProperty, false);
+
+            binding.UpdateSource();
+
+            DebugLog.Write($"PasswordBox: PasswordBox -> источник (len={passwordBox.Password.Length})");
         }
     }
 }

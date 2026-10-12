@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -53,6 +54,15 @@ namespace VideohostingPanel.Resources.Elements
             msgBox.SetMessage(message);
             msgBox.SetIcon(icon);
             msgBox.SetButtons(buttons);
+
+            var owner = System.Windows.Application.Current?.Windows
+                .OfType<Window>()
+                .FirstOrDefault(w => w.IsActive)
+                ?? System.Windows.Application.Current?.MainWindow;
+
+            if (owner != null && owner != msgBox)
+                msgBox.Owner = owner;
+
             msgBox.ShowDialog();
             return msgBox.Result;
         }
@@ -239,9 +249,15 @@ namespace VideohostingPanel.Resources.Elements
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left)
+            if (e.ChangedButton == MouseButton.Left && e.LeftButton == MouseButtonState.Pressed)
             {
-                DragMove();
+                try
+                {
+                    DragMove();
+                }
+                catch (InvalidOperationException)
+                {
+                }
             }
         }
 

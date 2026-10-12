@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
-using System.Net.Http;
 using WpfApiClient.Config;
 using VideohostingPanel.Services;
 using VideohostingPanel.ViewModels.Base;
@@ -55,9 +54,14 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                 IsBusy = true;
                 IsErrorVisible = false;
 
+                DebugLog.Write("--- Login command ---");
+                DebugLog.Write($"ServerAddress='{ServerAddress}', Port='{Port}'");
+                DebugLog.Write($"UserName='{UserName}', Password.Length={Password?.Length ?? -1}");
+
                 // Применяем адрес и порт ко всем API-запросам
                 _apiService.SetBaseUrl(ServerAddress, Port);
                 var baseUrl = AppConfig.BuildBaseUrl(ServerAddress, Port);
+                DebugLog.Write($"baseUrl='{baseUrl}'");
 
                 // Получаем токен через сервис аутентификации
                 var loginResponse = await _authService.LoginAsync(baseUrl, UserName, Password);
@@ -78,16 +82,14 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                 // Закрываем окно входа
                 CloseWindow();
             }
-            catch (HttpRequestException ex)
+            catch (LoginException ex)
             {
-                ShowError($"Ошибка подключения к серверу: {ex.Message}");
-            }
-            catch (UnauthorizedAccessException)
-            {
-                ShowError("Неверное имя пользователя или пароль");
+                DebugLog.Write($"LoginException {ex.StatusCode}: {ex.Message}");
+                ShowError(ex.Message);
             }
             catch (Exception ex)
             {
+                DebugLog.Write($"Unhandled exception: {ex}");
                 ShowError($"Ошибка входа: {ex.Message}");
             }
             finally

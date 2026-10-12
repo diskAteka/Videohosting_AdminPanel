@@ -85,7 +85,7 @@
                             <!-- Пароль -->
                             <TextBlock Text="Пароль *" Style="{StaticResource SubHeaderStyle}" Margin="0,0,0,5" FontSize="12"/>
                             <PasswordBox Style="{StaticResource BasePasswordBoxStyle}" Padding="5"
-                                         services:PasswordBoxHelper.BindPassword="{Binding Password}"
+                                         services:PasswordBoxHelper.BindPassword="{Binding Password, Mode=TwoWay}"
                                          Margin="0,0,0,15"/>
 
                             <!-- Роль -->
