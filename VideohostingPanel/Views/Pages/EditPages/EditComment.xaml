@@ -193,7 +193,7 @@
                             <!-- Кнопка удалить-->
                             <Button Content="Удалить запись" 
                                     Grid.Column="0"
-                                    Command="{Binding DeleteCommand}"
+                                    Command="{Binding DeleteAsyncCommand}"
                                     Background="#66FF0000" 
                                     Style="{StaticResource BaseButtonStyle}"
                                     Height="45" 
@@ -203,7 +203,7 @@
                                     Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             <Button Grid.Column="3" HorizontalAlignment="Right" Style="{StaticResource OutlinedButtonStyle}"
                                     Content="Сохранить" Width="250" Margin="10"
-                                    Command="{Binding SaveCommand}"/>
+                                    Command="{Binding SaveAsyncCommand}"/>
                         </Grid>
                     </Border>
                 </Grid>

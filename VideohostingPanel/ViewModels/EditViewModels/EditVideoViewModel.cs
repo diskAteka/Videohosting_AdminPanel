@@ -38,7 +38,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
 
         public ObservableCollection<VerificationStatusItem> VerificationStatuses { get; } = new()
         {
-            new VerificationStatusItem(false, "Не верифицировано"),
+            new /(false, "Не верифицировано"),
             new VerificationStatusItem(true, "Верифицировано")
         };
 
@@ -304,6 +304,8 @@ namespace VideohostingPanel.ViewModels.EditViewModels
             IsVerified = isVerified;
             DisplayName = displayName;
         }
+
+        public override string ToString() => DisplayName;
     }
 
     #endregion

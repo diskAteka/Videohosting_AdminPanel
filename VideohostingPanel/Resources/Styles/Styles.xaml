@@ -352,6 +352,20 @@
                                 </ScrollViewer>
                             </Border>
                         </Popup>
+                        <ToggleButton x:Name="toggleButton"
+                                      Grid.Column="0"
+                                      Grid.ColumnSpan="2"
+                                      Focusable="False"
+                                      ClickMode="Press"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border Background="Transparent"/>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">

@@ -322,6 +322,8 @@ namespace VideohostingPanel.ViewModels.AddViewModels
                 IsVerified = isVerified;
                 DisplayName = displayName;
             }
+
+            public override string ToString() => DisplayName;
         }
 
         #endregion

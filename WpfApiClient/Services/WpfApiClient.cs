@@ -14,7 +14,7 @@ namespace WpfApiClient.Services
     {
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonOptions;
-        private readonly string _apiBaseUrl = AppConfig.WPF_PREFIX;
+        private string _apiBaseUrl = AppConfig.WPF_PREFIX;
 
 
         private static readonly Dictionary<Type, string> EntityEndpoints = new()
@@ -51,7 +51,10 @@ namespace WpfApiClient.Services
 
         public void SetBaseUrl(string server, string port)
         {
-            _httpClient.BaseAddress = new Uri(AppConfig.BuildBaseUrl(server, port));
+            // Не меняем HttpClient.BaseAddress: после первого запроса это бросает
+            // InvalidOperationException. Вместо этого храним абсолютный префикс —
+            // он перекрывает BaseAddress и позволяет повторный вход.
+            _apiBaseUrl = $"{AppConfig.BuildBaseUrl(server, port)}{AppConfig.WPF_PREFIX}";
         }
 
         private string GetEntityEndpoint<T>()
@@ -135,10 +138,7 @@ namespace WpfApiClient.Services
                 $"{_apiBaseUrl}/update/{entity}/{id}", dto, _jsonOptions);
 
             response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<UpdateRezult>(_jsonOptions);
-            if (!result.Success)
-                throw new InvalidOperationException($"Не удалось обновить {typeof(T).Name}: {result.Message}");
-            return result;
+            return await ReadUpdateRezultAsync(response);
         }
 
         public async Task<DeleteResult> DeleteAsync<T>(int id)
@@ -148,8 +148,8 @@ namespace WpfApiClient.Services
 
             response.EnsureSuccessStatusCode();
             var result = await response.Content.ReadFromJsonAsync<DeleteResult>(_jsonOptions);
-            if (!result.Success)
-                throw new InvalidOperationException($"Не удалось удалить {typeof(T).Name}: {result.Message}");
+            if (result == null || !result.Success)
+                throw new InvalidOperationException($"Не удалось удалить {typeof(T).Name}: {result?.Message}");
             return result;
         }
 
@@ -159,10 +159,20 @@ namespace WpfApiClient.Services
                 $"{_apiBaseUrl}/reset/password/{userId}", request, _jsonOptions);
 
             response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<UpdateRezult>(_jsonOptions);
-            if (!result.Success)
-                throw new InvalidOperationException($"Не удалось сбросить пароль: {result.Message}");
-            return result;
+            return await ReadUpdateRezultAsync(response);
+        }
+
+        // UpdateRezult — структура с get-only свойствами Success/AffectedTables.
+        // System.Text.Json для структур предпочитает конструктор по умолчанию и не
+        // может заполнить get-only свойства, из-за чего Success всегда false.
+        // Поэтому читаем ответ в промежуточный DTO и собираем UpdateRezult сами.
+        private async Task<UpdateRezult> ReadUpdateRezultAsync(HttpResponseMessage response)
+        {
+            var dto = await response.Content.ReadFromJsonAsync<UpdateRezultDto>(_jsonOptions);
+            return new UpdateRezult(dto?.AffectedTables, dto?.Success ?? true)
+            {
+                Message = dto?.Message ?? "Успешное обновление записи"
+            };
         }
 
         public async Task<int> GetCountAsync(string type, bool isAdmin = true)
@@ -172,17 +182,15 @@ namespace WpfApiClient.Services
             var response = await _httpClient.GetAsync(url);
 
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<int>(_jsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<CountResponse>(_jsonOptions);
+            return result?.Count ?? 0;
         }
 
         public async Task<UpdateRezult> VerifyVideoAsync(int videoId)
         {
             var response = await _httpClient.PutAsync($"{_apiBaseUrl}/video/verify/{videoId}", null);
             response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<UpdateRezult>(_jsonOptions);
-            if (!result.Success)
-                throw new InvalidOperationException($"Не удалось верифицировать видео: {result.Message}");
-            return result;
+            return await ReadUpdateRezultAsync(response);
         }
 
         public async Task<string> GetStreamUrlAsync(int videoId)
@@ -190,7 +198,8 @@ namespace WpfApiClient.Services
             var response = await _httpClient.GetAsync($"{_apiBaseUrl}/stream/{videoId}");
             response.EnsureSuccessStatusCode();
 
-            var url = await response.Content.ReadFromJsonAsync<string>(_jsonOptions);
+            // Сервер отдаёт URL как text/plain (иногда в кавычках) — не как JSON-строку.
+            var url = (await response.Content.ReadAsStringAsync()).Trim().Trim('"');
             if (string.IsNullOrWhiteSpace(url))
                 throw new InvalidOperationException("Сервер не вернул URL видеопотока");
 
@@ -203,6 +212,18 @@ namespace WpfApiClient.Services
                 HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStreamAsync();
+        }
+
+        private sealed class UpdateRezultDto
+        {
+            public bool Success { get; set; }
+            public string? Message { get; set; }
+            public List<string?>? AffectedTables { get; set; }
+        }
+
+        private sealed class CountResponse
+        {
+            public int Count { get; set; }
         }
     }
 }

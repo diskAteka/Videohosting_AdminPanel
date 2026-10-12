@@ -114,6 +114,8 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
 
         #region Конструктор
 
+        private readonly Action _tokenExpiredHandler;
+
         public MainViewModel(
             ApiService apiService,
             IServiceProvider serviceProvider,
@@ -125,11 +127,17 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
             Title = "Видеохостинг - Панель управления";
 
             // Подписка на истечение токена
-            _tokenHandler.OnTokenExpired += () =>
+            _tokenExpiredHandler = () =>
                 Application.Current.Dispatcher.BeginInvoke(() => Logout());
+            _tokenHandler.OnTokenExpired += _tokenExpiredHandler;
 
             // Настройка интерфейса в зависимости от роли сотрудника
             ApplyUserRole();
+        }
+
+        public void Detach()
+        {
+            _tokenHandler.OnTokenExpired -= _tokenExpiredHandler;
         }
         #endregion
 
@@ -139,7 +147,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         {
             var role = _tokenHandler.Role;
 
-            if (string.Equals(role, "Virifier", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(role, Roles.Verifier.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 IsAdmin = false;
                 IsVerifier = true;
@@ -186,14 +194,14 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         {
             AvailableTables = new ObservableCollection<ComboBoxItem>
             {
-                new() { Id = (int)Tables.Video, DisplayName = "Видео" },
-                new() { Id = (int)Tables.User, DisplayName = "Пользователи" },
-                new() { Id = (int)Tables.Comment, DisplayName = "Комментарии" },
-                new() { Id = (int)Tables.Like, DisplayName = "Лайки" },
-                new() { Id = (int)Tables.DisLike, DisplayName = "Дизлайки" },
-                new() { Id = (int)Tables.View, DisplayName = "Просмотры" },
-                new() { Id = (int)Tables.ServerLog, DisplayName = "Логи" },
-                new() { Id = (int)Tables.Emploee, DisplayName = "Сотрудники" }
+                new() { Id = (int)Tables.Video, DisplayName = "Видео", ServerKey = "Video" },
+                new() { Id = (int)Tables.User, DisplayName = "Пользователи", ServerKey = "User" },
+                new() { Id = (int)Tables.Comment, DisplayName = "Комментарии", ServerKey = "Comment" },
+                new() { Id = (int)Tables.Like, DisplayName = "Лайки", ServerKey = "Like" },
+                new() { Id = (int)Tables.DisLike, DisplayName = "Дизлайки", ServerKey = "Dislike" },
+                new() { Id = (int)Tables.View, DisplayName = "Просмотры", ServerKey = "View" },
+                new() { Id = (int)Tables.ServerLog, DisplayName = "Логи", ServerKey = "ServerLog" },
+                new() { Id = (int)Tables.Emploee, DisplayName = "Сотрудники", ServerKey = "Employee" }
             };
 
             SelectedTable = AvailableTables[0];
@@ -257,7 +265,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                 }
 
                 TotalItems = await _apiService.GetCountAsync(
-                    SelectedTable.DisplayName.ToLower(), IsAdmin);
+                    SelectedTable.ServerKey, IsAdmin);
 
                 UpdatePaginationInfo();
             }

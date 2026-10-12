@@ -37,7 +37,7 @@ namespace VideohostingPanel
             services.AddSingleton<ApiService>();
 
             // Window ViewModels
-            services.AddSingleton<MainViewModel>();
+            services.AddTransient<MainViewModel>();
             services.AddTransient<LoginViewModel>();
 
             // Edit ViewModels
@@ -53,7 +53,7 @@ namespace VideohostingPanel
             services.AddTransient<VerifyVideoViewModel>();
 
             // Окна
-            services.AddSingleton<MainWindow>();
+            services.AddTransient<MainWindow>();
             services.AddTransient<LoginWindow>();
 
             ServiceProvider = services.BuildServiceProvider();

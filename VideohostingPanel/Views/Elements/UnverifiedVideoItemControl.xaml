@@ -21,13 +21,13 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Image Source="{Binding PosterUrl}" Width="80" Height="45"
+            <Image x:Name="PosterImage" Width="80" Height="45"
                    Stretch="UniformToFill" Margin="0,0,15,0"
                    VerticalAlignment="Center"/>
 
             <StackPanel Grid.Column="1">
                 <StackPanel Orientation="Horizontal">
-                    <Image Source="/Images/unverified_badge.png" Width="16" Height="16" Margin="0,0,5,0"/>
+                    <Image Source="/Resources/Images/ic_warning.png" Width="16" Height="16" Margin="0,0,5,0"/>
                     <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Bold"
                                Foreground="{StaticResource TextPrimaryBrush}"/>
                 </StackPanel>

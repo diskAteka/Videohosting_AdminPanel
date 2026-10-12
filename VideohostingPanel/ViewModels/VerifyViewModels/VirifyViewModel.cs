@@ -290,15 +290,18 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
 
         private async Task LoadImageAsync(Stream stream)
         {
-            var bitmapImage = new BitmapImage();
-
-            await Task.Run(() =>
+            // BitmapImage создаётся и замораживается целиком в фоновом потоке:
+            // создание на UI-потоке и инициализация в Task.Run приводит к ошибке
+            // доступа «владельцем объекта является другой поток».
+            var bitmapImage = await Task.Run(() =>
             {
-                bitmapImage.BeginInit();
-                bitmapImage.StreamSource = stream;
-                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                bitmapImage.EndInit();
-                bitmapImage.Freeze();
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = stream;
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.EndInit();
+                bitmap.Freeze();
+                return bitmap;
             });
 
             PosterImageSource = bitmapImage;

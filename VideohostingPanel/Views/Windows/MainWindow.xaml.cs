@@ -19,23 +19,42 @@ namespace VideohostingPanel.Views.Windows
             _mainViewModel.ModalPageRequested += OnModalPageRequested;
             _mainViewModel.HideModalPageRequested += OnHideModalPageRequested;
 
+            Closed += OnClosed;
+
             MouseLeftButtonDown += (s, e) =>
             {
                 if (e.ButtonState == MouseButtonState.Pressed)
-                    DragMove();
+                {
+                    try
+                    {
+                        DragMove();
+                    }
+                    catch (InvalidOperationException)
+                    {
+                    }
+                }
             };
+        }
+
+        private void OnClosed(object? sender, EventArgs e)
+        {
+            _mainViewModel.ModalPageRequested -= OnModalPageRequested;
+            _mainViewModel.HideModalPageRequested -= OnHideModalPageRequested;
+            _mainViewModel.Detach();
         }
 
         private void OnModalPageRequested(BaseViewModel viewModel, Page page)
         {
             MainFrame.Content = page;
             MainFrame.Visibility = Visibility.Visible;
+            MainContent.Visibility = Visibility.Collapsed;
         }
 
         private void OnHideModalPageRequested()
         {
             MainFrame.Content = null;
             MainFrame.Visibility = Visibility.Collapsed;
+            MainContent.Visibility = Visibility.Visible;
         }
     }
 }
