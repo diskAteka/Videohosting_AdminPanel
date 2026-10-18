@@ -49,6 +49,22 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         private bool _isVideoLoading = true;
 
         [ObservableProperty]
+        private bool _isFullScreen;
+
+        partial void OnIsFullScreenChanged(bool value)
+        {
+            FullScreenChanged?.Invoke(value);
+        }
+
+        public event Action<bool>? FullScreenChanged;
+
+        [RelayCommand]
+        public void ToggleFullScreen()
+        {
+            IsFullScreen = !IsFullScreen;
+        }
+
+        [ObservableProperty]
         private string _statusMessage = "";
 
         [ObservableProperty]
@@ -242,19 +258,21 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
 
         private void VlcPlayer_TimeChanged(object sender, VlcMediaPlayerTimeChangedEventArgs e)
         {
-            if (!IsDragging)
-            {
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var currentTime = TimeSpan.FromMilliseconds(e.NewTime);
-                    CurrentTime = $"{currentTime.Minutes:D2}:{currentTime.Seconds:D2}";
+            if (IsDragging)
+                return;
 
-                    if (_vlcPlayer.Length > 0)
-                    {
-                        VideoSliderPosition = (double)e.NewTime / _vlcPlayer.Length;
-                    }
-                });
-            }
+            // Не биндим ползунок напрямую: пока пользователь тянет его, значение приходит
+            // из VLC и вызывает Seek → зависание. Обновляем только вне перетаскивания.
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                var currentTime = TimeSpan.FromMilliseconds(e.NewTime);
+                CurrentTime = $"{currentTime.Minutes:D2}:{currentTime.Seconds:D2}";
+
+                if (_vlcPlayer.Length > 0)
+                {
+                    VideoSliderPosition = (double)e.NewTime / _vlcPlayer.Length;
+                }
+            }, System.Windows.Threading.DispatcherPriority.Background);
         }
 
         private void VlcPlayer_LengthChanged(object sender, VlcMediaPlayerLengthChangedEventArgs e)

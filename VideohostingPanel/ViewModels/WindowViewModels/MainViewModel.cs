@@ -528,7 +528,6 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
             vm.OnGoBackRequested += HideModalAndReload;
             var page = new VerifyVideo(vm);
             ShowModalPage(vm, page);
-            _ = vm.LoadVideoCommand.ExecuteAsync(null);
         }
 
 #endregion
