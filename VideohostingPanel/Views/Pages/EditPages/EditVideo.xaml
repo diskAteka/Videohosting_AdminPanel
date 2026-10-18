@@ -141,15 +141,15 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Просмотры" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
-                                    <TextBox Text="{Binding Video.Views}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Margin="0,5,5,0"/>
+                                    <TextBox Text="{Binding Video.Views}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Padding="8,0" VerticalContentAlignment="Center" Margin="0,5,5,0"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1">
                                     <TextBlock Text="Лайки" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
-                                    <TextBox Text="{Binding Video.Likes}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Margin="5,5,5,0"/>
+                                    <TextBox Text="{Binding Video.Likes}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Padding="8,0" VerticalContentAlignment="Center" Margin="5,5,5,0"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Text="Дизлайки" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
-                                    <TextBox Text="{Binding Video.Dislikes}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Margin="5,5,0,0"/>
+                                    <TextBox Text="{Binding Video.Dislikes}" Style="{StaticResource BaseTextBoxStyle}" Height="40" Padding="8,0" VerticalContentAlignment="Center" Margin="5,5,0,0"/>
                                 </StackPanel>
                             </Grid>
 

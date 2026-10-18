@@ -84,7 +84,7 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
             try
             {
                 if (!string.IsNullOrEmpty(Video.Poster))
-                    await LoadImageAsync(await _apiService.GetPosterAsync(Video.Id));
+                    PosterImageSource = await PosterLoader.LoadAsync(Video.Id);
 
                 if (_vlcPlayer != null)
                 {
@@ -212,6 +212,25 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
             });
         }
 
+        private void VlcPlayer_Opening(object sender, VlcMediaPlayerOpeningEventArgs e)
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                StatusMessage = "Загрузка видео...";
+                StatusColor = "White";
+            });
+        }
+
+        private void VlcPlayer_EncounteredError(object sender, VlcMediaPlayerEncounteredErrorEventArgs e)
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                IsVideoLoading = false;
+                StatusMessage = "Не удалось воспроизвести видео";
+                StatusColor = "#FF4444";
+            });
+        }
+
         private void VlcPlayer_Stopped(object sender, VlcMediaPlayerStoppedEventArgs e)
         {
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
@@ -272,12 +291,21 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
                 AppConfig.VLC_LIB_DIRECTORY));
 
-            _vlcPlayer.VlcMediaplayerOptions = new string[]
+            var options = new List<string>
             {
                 "--network-caching=3000",  // Буферизация сети
                 "--no-video-title-show",
                 "--no-snapshot-preview"
             };
+
+            var trustDir = Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                "Resources", "Certs");
+
+            if (Directory.Exists(trustDir))
+                options.Add($"--gnutls-dir-trust={trustDir}");
+
+            _vlcPlayer.VlcMediaplayerOptions = options.ToArray();
 
             // Подписка на события плеера
             _vlcPlayer.Playing += VlcPlayer_Playing;
@@ -286,25 +314,8 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
             _vlcPlayer.TimeChanged += VlcPlayer_TimeChanged;
             _vlcPlayer.LengthChanged += VlcPlayer_LengthChanged;
             _vlcPlayer.EndReached += VlcPlayer_EndReached;
-        }
-
-        private async Task LoadImageAsync(Stream stream)
-        {
-            // BitmapImage создаётся и замораживается целиком в фоновом потоке:
-            // создание на UI-потоке и инициализация в Task.Run приводит к ошибке
-            // доступа «владельцем объекта является другой поток».
-            var bitmapImage = await Task.Run(() =>
-            {
-                var bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.StreamSource = stream;
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.EndInit();
-                bitmap.Freeze();
-                return bitmap;
-            });
-
-            PosterImageSource = bitmapImage;
+            _vlcPlayer.Opening += VlcPlayer_Opening;
+            _vlcPlayer.EncounteredError += VlcPlayer_EncounteredError;
         }
 
         public void Cleanup()
@@ -318,6 +329,8 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
                 _vlcPlayer.TimeChanged -= VlcPlayer_TimeChanged;
                 _vlcPlayer.LengthChanged -= VlcPlayer_LengthChanged;
                 _vlcPlayer.EndReached -= VlcPlayer_EndReached;
+                _vlcPlayer.Opening -= VlcPlayer_Opening;
+                _vlcPlayer.EncounteredError -= VlcPlayer_EncounteredError;
 
                 _vlcPlayer.Stop();
                 _vlcPlayer.Dispose();

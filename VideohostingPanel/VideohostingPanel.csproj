@@ -28,6 +28,10 @@
     <None Remove="Resources\Images\ic_upload_poster.png" />
     <None Remove="Resources\Images\ic_upload_video.png" />
     <None Remove="Resources\Images\ic_warning.png" />
+    <None Remove="Resources\Images\ic_play.png" />
+    <None Remove="Resources\Images\ic_pause.png" />
+    <None Remove="Resources\Images\ic_volume.png" />
+    <None Remove="Resources\Images\ic_mute.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -72,6 +76,16 @@
     <Resource Include="Resources\Images\ic_upload_video.png" />
     <Resource Include="Resources\Images\ic_view.png" />
     <Resource Include="Resources\Images\ic_warning.png" />
+    <Resource Include="Resources\Images\ic_play.png" />
+    <Resource Include="Resources\Images\ic_pause.png" />
+    <Resource Include="Resources\Images\ic_volume.png" />
+    <Resource Include="Resources\Images\ic_mute.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\Certs\rootCA.pem">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

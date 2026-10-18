@@ -108,8 +108,8 @@
                                     <RowDefinition/>
                                     <RowDefinition/>
                                 </Grid.RowDefinitions>
-                                <WindowsFormsHost Grid.Row="0" x:Name="VideoHost" 
-                                                Visibility="{Binding IsVideoLoading, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+                                <WindowsFormsHost Grid.Row="0" x:Name="VideoHost"
+                                                  Visibility="{Binding IsVideoLoading, Converter={StaticResource InverseBoolToVisibilityConverter}}">
                                     <!-- VLC плеер будет добавлен программно -->
                                 </WindowsFormsHost>
                                 <Border Grid.Row="0" Background="#80000000"
@@ -153,7 +153,7 @@
                                                         PreviewMouseUp="VideoSlider_PreviewMouseUp"/>
                                                 <TextBlock Grid.Column="3" Text="{Binding TotalTime}" Foreground="White"
                                                             VerticalAlignment="Center" Margin="5,0" FontSize="12"/>
-                                                <Button Grid.Column="4" Command="{Binding MuteCommand}"
+                                                <Button Grid.Column="4" Command="{Binding MuteUnmuteCommand}"
                                                         Style="{StaticResource PlayerControlButtonStyle}">
                                                     <Image Source="{Binding IsMute, Converter={StaticResource MuteSoundConverter}}" Width="16" Height="16"/>
                                                 </Button>

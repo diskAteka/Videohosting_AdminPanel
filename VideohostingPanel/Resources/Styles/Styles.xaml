@@ -325,7 +325,9 @@
                                                 Grid.Column="0"
                                                 Margin="15,0,0,0"
                                                 VerticalAlignment="Center"
-                                                Content="{TemplateBinding SelectionBoxItem}"/>
+                                                Content="{TemplateBinding SelectionBoxItem}"
+                                                ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"/>
                                 <Path Grid.Column="1"
                                       Width="12"
                                       Height="12"

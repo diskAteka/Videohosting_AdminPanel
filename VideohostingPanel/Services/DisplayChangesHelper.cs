@@ -14,7 +14,7 @@ namespace VideohostingPanel.Services
             if (affectedTables == null)
                 return output;
             
-            for (int i = 0; i <= affectedTables.Count; i++)
+            for (int i = 0; i < affectedTables.Count; i++)
                 output += affectedTables[i] + "\n";
             return output;
         }

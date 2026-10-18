@@ -38,7 +38,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
 
         public ObservableCollection<VerificationStatusItem> VerificationStatuses { get; } = new()
         {
-            new /(false, "Не верифицировано"),
+            new VerificationStatusItem(false, "Не верифицировано"),
             new VerificationStatusItem(true, "Верифицировано")
         };
 
@@ -285,6 +285,8 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         public string Name { get; }
         public string Email { get; }
         public string DisplayName => $"{Name} (ID: {Id})";
+
+        public override string ToString() => DisplayName;
 
         public AuthorDisplayItem(int id, string name, string email)
         {

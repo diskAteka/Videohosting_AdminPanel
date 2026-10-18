@@ -51,11 +51,16 @@ namespace WpfApiClient.Config
         public const string EMAIL_REGEX = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
 
         /// <summary>
-        /// Собирает полный базовый URL из компонентов
+        /// Собирает полный базовый URL из компонентов.
+        /// Схема выводится автоматически: порт 443/8443 → https, иначе http.
+        /// Явное значение scheme имеет приоритет.
         /// </summary>
-        public static string BuildBaseUrl(string server, string port, string scheme = DEFAULT_SCHEME)
+        public static string BuildBaseUrl(string server, string port, string? scheme = null)
         {
-            return $"{scheme}://{server}:{port}";
+            var resolvedScheme = scheme
+                ?? (port == "443" || port == "8443" ? "https" : DEFAULT_SCHEME);
+
+            return $"{resolvedScheme}://{server}:{port}";
         }
     }
 }

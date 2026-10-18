@@ -22,9 +22,11 @@ namespace VideohostingPanel.Views.Pages
         private void InitializeVlcPlayer()
         {
             _vlcPlayer = new VlcControl();
+            _vlcPlayer.BeginInit();
             _vlcPlayer.Dock = DockStyle.Fill;
             VideoHost.Child = _vlcPlayer;
             _viewModel.InitializeVlcPlayer(_vlcPlayer);
+            _vlcPlayer.EndInit();
         }
 
         private void VideoSlider_PreviewMouseDown(object sender, MouseButtonEventArgs e)
