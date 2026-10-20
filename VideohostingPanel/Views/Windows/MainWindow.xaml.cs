@@ -20,20 +20,46 @@ namespace VideohostingPanel.Views.Windows
             _mainViewModel.HideModalPageRequested += OnHideModalPageRequested;
 
             Closed += OnClosed;
+        }
 
-            MouseLeftButtonDown += (s, e) =>
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState != MouseButtonState.Pressed)
+                return;
+
+            try
             {
-                if (e.ButtonState == MouseButtonState.Pressed)
-                {
-                    try
-                    {
-                        DragMove();
-                    }
-                    catch (InvalidOperationException)
-                    {
-                    }
-                }
-            };
+                DragMove();
+            }
+            catch (InvalidOperationException)
+            {
+                // Окно уже разворачивается/закрывается.
+            }
+        }
+
+        /// <summary>
+        /// Показывает или скрывает системные кнопки окна на модальных страницах.
+        /// </summary>
+        public void SetModalWindowControlsVisible(bool visible)
+        {
+            ModalWindowButtons.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Application.Current.Shutdown();
+        }
+
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
+
+        private void MaximizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState == WindowState.Maximized
+                ? WindowState.Normal
+                : WindowState.Maximized;
         }
 
         private void OnClosed(object? sender, EventArgs e)
@@ -48,6 +74,7 @@ namespace VideohostingPanel.Views.Windows
             MainFrame.Content = page;
             MainFrame.Visibility = Visibility.Visible;
             MainContent.Visibility = Visibility.Collapsed;
+            SetModalWindowControlsVisible(true);
         }
 
         private void OnHideModalPageRequested()
@@ -55,6 +82,7 @@ namespace VideohostingPanel.Views.Windows
             MainFrame.Content = null;
             MainFrame.Visibility = Visibility.Collapsed;
             MainContent.Visibility = Visibility.Visible;
+            SetModalWindowControlsVisible(false);
         }
     }
 }

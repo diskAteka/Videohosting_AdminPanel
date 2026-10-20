@@ -5,13 +5,25 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VideohostingPanel"
         xmlns:elements="clr-namespace:VideohostingPanel.Views.Elements"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="Видеохостинг - Панель управления"
         MinWidth="1200"
         MinHeight="800"
+        Width="1400"
+        Height="900"
         WindowStartupLocation="CenterScreen"
-        AllowsTransparency="True"
-        Background="Transparent"
-        WindowStyle="None">
+        AllowsTransparency="False"
+        Background="#0A0A0A"
+        WindowStyle="None"
+        ResizeMode="CanResize">
+
+        <shell:WindowChrome.WindowChrome>
+            <shell:WindowChrome CaptionHeight="0"
+                                ResizeBorderThickness="8"
+                                GlassFrameThickness="0"
+                                CornerRadius="0"
+                                UseAeroCaptionButtons="False"/>
+        </shell:WindowChrome.WindowChrome>
     
     <Window.Resources>
         <ResourceDictionary>
@@ -78,13 +90,14 @@
             </Grid.RowDefinitions>
 
             <!-- Верхняя панель -->
-            <Border Grid.Row="0"
+            <Border x:Name="TitleBar" Grid.Row="0"
                     Background="{StaticResource DarkSecondaryBrush}"
                     CornerRadius="15"
                     BorderBrush="{StaticResource PrimaryPurpleBrush}"
                     BorderThickness="1"
                     Margin="0,0,0,10"
-                    Opacity="0.95">
+                    Opacity="0.95"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -107,16 +120,47 @@
                                   Foreground="{StaticResource TextSecondaryBrush}"
                                   VerticalAlignment="Center"/>
 
-                        <!-- Кнопка выхода -->
-                        <Button Command="{Binding LogoutCommand}"
+                        <!-- Кнопка сворачивания -->
+                        <Button Click="MinimizeButton_Click"
                                 Width="35" Height="35"
                                 Background="Transparent" BorderThickness="0"
                                 Margin="15,0,0,0" Cursor="Hand">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                                        <Rectangle Width="12" Height="2" Fill="{StaticResource TextSecondaryBrush}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- Кнопка выхода -->
+                        <Button Command="{Binding LogoutCommand}"
+                                Width="35" Height="35"
+                                Background="Transparent" BorderThickness="0"
+                                Margin="5,0,0,0" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
                                         <Image Source="/Resources/Images/ic_arrow_back.png" Width="15" Height="15"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- Кнопка разворачивания -->
+                        <Button Click="MaximizeButton_Click"
+                                Width="35" Height="35"
+                                Background="Transparent" BorderThickness="0"
+                                Margin="5,0,0,0" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                                        <Rectangle Width="11" Height="11" Stroke="{StaticResource TextSecondaryBrush}"
+                                                   StrokeThickness="1.5" Fill="Transparent"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                 </ControlTemplate>
                             </Button.Template>
@@ -357,11 +401,11 @@
                                        Foreground="White"/>
                         </Border>
 
-                        <Border Grid.Row="1" Background="Transparent" Margin="0">
+                        <Border Grid.Row="1" Background="Transparent" Margin="0,10,0,0">
                             <ScrollViewer Style="{StaticResource BaseScrollViewerStyle}"
                                           VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled">
-                                <ItemsControl ItemsSource="{Binding UnverifiedVideos}"/>
+                                <ItemsControl ItemsSource="{Binding UnverifiedVideos}" Margin="10,0"/>
                             </ScrollViewer>
                         </Border>
                     </Grid>
@@ -373,5 +417,59 @@
                Panel.ZIndex="1"
                NavigationUIVisibility="Hidden"
                Visibility="Collapsed"/>
+
+        <!-- Кнопки управления окном для модальных страниц (редактирование, верификация) -->
+        <StackPanel x:Name="ModalWindowButtons"
+                    Panel.ZIndex="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,10,15,0"
+                    Visibility="Collapsed">
+            <Button Width="35" Height="35"
+                    Background="#B3000000" BorderThickness="0"
+                    Cursor="Hand" ToolTip="Свернуть"
+                    Click="MinimizeButton_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                            <Rectangle Width="12" Height="2" Fill="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+            <Button Width="35" Height="35"
+                    Background="#B3000000" BorderThickness="0"
+                    Margin="5,0,0,0" Cursor="Hand" ToolTip="Оконный режим / на весь экран"
+                    Click="MaximizeButton_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                            <Path Width="11" Height="11"
+                                  Data="M0,3 L8,3 L8,11 L0,11 Z M6,0 L14,0 L14,8"
+                                  Stroke="White" StrokeThickness="1.5" Fill="Transparent"
+                                  Stretch="Uniform"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+            <Button Width="35" Height="35"
+                    Background="#B3C42B1C" BorderThickness="0"
+                    Margin="5,0,0,0" Cursor="Hand" ToolTip="Закрыть приложение"
+                    Click="CloseButton_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                            <Path Width="10" Height="10"
+                                  Data="M0,0 L10,10 M10,0 L0,10"
+                                  Stroke="White" StrokeThickness="1.5"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
     </Grid>
 </Window>

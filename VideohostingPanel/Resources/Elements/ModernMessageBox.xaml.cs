@@ -222,8 +222,8 @@ namespace VideohostingPanel.Resources.Elements
             BeginAnimation(OpacityProperty, opacityAnimation);
 
             var scaleTransform = new ScaleTransform(0.9, 0.9);
-            RenderTransform = scaleTransform;
-            RenderTransformOrigin = new Point(0.5, 0.5);
+            RootBorder.RenderTransform = scaleTransform;
+            RootBorder.RenderTransformOrigin = new Point(0.5, 0.5);
 
             scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty,
                 new DoubleAnimation(1, TimeSpan.FromSeconds(0.3))

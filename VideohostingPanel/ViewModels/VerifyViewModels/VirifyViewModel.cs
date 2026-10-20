@@ -18,6 +18,11 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         private VlcControl _vlcPlayer;
         private DispatcherTimer _updateTimer;
         public bool IsDragging = false;
+        private volatile bool _isSeeking;
+
+        private readonly object _seekLock = new object();
+        private long _pendingSeekMs = -1;
+        private bool _seekWorkerRunning;
 
         #region Свойства для разметки
 
@@ -53,6 +58,8 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
 
         partial void OnIsFullScreenChanged(bool value)
         {
+            // Само разворачивание выполняет View (VirifyVideo.xaml.cs):
+            // libvlc не умеет разворачивать embedded-видео в WinForms-хосте.
             FullScreenChanged?.Invoke(value);
         }
 
@@ -133,11 +140,92 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         [RelayCommand]
         public void SeekVideo(double position)
         {
-            if (_vlcPlayer != null)
+            if (_vlcPlayer == null)
+                return;
+
+            var totalTime = _vlcPlayer.Length;
+            if (totalTime <= 0)
+                return;
+
+            if (position < 0) position = 0;
+            if (position > 1) position = 1;
+
+            var newTime = (long)(totalTime * position);
+
+            // Не даём перемотке попасть ровно в конец: VLC в этот момент
+            // останавливает воспроизведение и обрывает сетевой поток.
+            if (totalTime > 1000 && newTime > totalTime - 1000)
+                newTime = totalTime - 1000;
+
+            VideoSliderPosition = position;
+
+            // Перемотка сетевого потока занимает время (VLC переоткрывает соединение
+            // с S3), поэтому выполняется в фоне. Запросы сериализуются: пока идёт
+            // предыдущая перемотка, новый запрос только заменяет целевое время.
+            EnqueueSeek(newTime);
+        }
+
+        private void EnqueueSeek(long targetMs)
+        {
+            lock (_seekLock)
             {
-                var totalTime = _vlcPlayer.Length;
-                var newTime = (long)(totalTime * position);
-                _vlcPlayer.Time = newTime;
+                _pendingSeekMs = targetMs;
+                _isSeeking = true;
+
+                if (_seekWorkerRunning)
+                    return;
+
+                _seekWorkerRunning = true;
+            }
+
+            Task.Run(SeekWorker);
+        }
+
+        private void SeekWorker()
+        {
+            while (true)
+            {
+                long target;
+                lock (_seekLock)
+                {
+                    if (_pendingSeekMs < 0)
+                    {
+                        _seekWorkerRunning = false;
+                        _isSeeking = false;
+                        return;
+                    }
+
+                    target = _pendingSeekMs;
+                    _pendingSeekMs = -1;
+                }
+
+                var player = _vlcPlayer;
+                if (player == null)
+                    continue;
+
+                try
+                {
+                    player.Time = target;
+                }
+                catch
+                {
+                    // VLC может бросить IOException при переоткрытии потока — не фатально.
+                    try
+                    {
+                        var wasPlaying = player.IsPlaying;
+                        if (wasPlaying)
+                            player.Pause();
+
+                        player.Time = target;
+
+                        if (wasPlaying)
+                            player.Play();
+                    }
+                    catch
+                    {
+                        // Поток уже переоткрыт/остановлен.
+                    }
+                }
             }
         }
 
@@ -168,8 +256,10 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
                 if (Video == null) return;
 
                 await _apiService.VerifyVideoAsync(Video.Id);
-                StatusMessage = "Видео успешно одобрено!";
-                StatusColor = "#4CAF50";
+
+                // После успешной верификации закрываем страницу так же, как по кнопке «Назад»,
+                // иначе пользователь остаётся на уже обработанном видео.
+                GoBack();
             }
             catch (Exception ex)
             {
@@ -216,6 +306,8 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
             {
                 IsVideoLoading = false;
                 IsPause = false;
+                if (_vlcPlayer != null)
+                    _vlcPlayer.Audio.Volume = (int)(VolumeSliderPosition * 100);
                 _updateTimer.Start();
             });
         }
@@ -258,7 +350,7 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
 
         private void VlcPlayer_TimeChanged(object sender, VlcMediaPlayerTimeChangedEventArgs e)
         {
-            if (IsDragging)
+            if (IsDragging || _isSeeking)
                 return;
 
             // Не биндим ползунок напрямую: пока пользователь тянет его, значение приходит
@@ -313,7 +405,9 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
             {
                 "--network-caching=3000",  // Буферизация сети
                 "--no-video-title-show",
-                "--no-snapshot-preview"
+                "--no-snapshot-preview",
+                // Быстрый отклик на перемотку: не искать ключевой кадр с начала файла.
+                "--input-fast-seek"
             };
 
             var trustDir = Path.Combine(
@@ -339,8 +433,16 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         public void Cleanup()
         {
             _updateTimer?.Stop();
+
+            lock (_seekLock)
+            {
+                _pendingSeekMs = -1;
+            }
             if (_vlcPlayer != null)
             {
+                if (IsFullScreen)
+                    IsFullScreen = false;
+
                 _vlcPlayer.Playing -= VlcPlayer_Playing;
                 _vlcPlayer.Paused -= VlcPlayer_Paused;
                 _vlcPlayer.Stopped -= VlcPlayer_Stopped;

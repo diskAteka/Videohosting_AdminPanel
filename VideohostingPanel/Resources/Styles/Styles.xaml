@@ -552,8 +552,9 @@
     <Style x:Key="VideoSliderStyle" TargetType="Slider">
         <Setter Property="Minimum" Value="0"/>
         <Setter Property="Maximum" Value="100"/>
-        <Setter Property="TickFrequency" Value="1"/>
-        <Setter Property="IsSnapToTickEnabled" Value="True"/>
+        <Setter Property="TickFrequency" Value="0.01"/>
+        <Setter Property="IsSnapToTickEnabled" Value="False"/>
+        <Setter Property="IsMoveToPointEnabled" Value="True"/>
         <Setter Property="Height" Value="30"/>
         <Setter Property="Template">
             <Setter.Value>

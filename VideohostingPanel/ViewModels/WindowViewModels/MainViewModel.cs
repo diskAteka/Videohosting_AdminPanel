@@ -197,9 +197,6 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                 new() { Id = (int)Tables.Video, DisplayName = "Видео", ServerKey = "Video" },
                 new() { Id = (int)Tables.User, DisplayName = "Пользователи", ServerKey = "User" },
                 new() { Id = (int)Tables.Comment, DisplayName = "Комментарии", ServerKey = "Comment" },
-                new() { Id = (int)Tables.Like, DisplayName = "Лайки", ServerKey = "Like" },
-                new() { Id = (int)Tables.DisLike, DisplayName = "Дизлайки", ServerKey = "Dislike" },
-                new() { Id = (int)Tables.View, DisplayName = "Просмотры", ServerKey = "View" },
                 new() { Id = (int)Tables.ServerLog, DisplayName = "Логи", ServerKey = "ServerLog" },
                 new() { Id = (int)Tables.Emploee, DisplayName = "Сотрудники", ServerKey = "Employee" }
             };
@@ -247,15 +244,6 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                     case Tables.Comment:
                         await LoadCommentsAsync();
                         break;
-                    case Tables.Like:
-                        await LoadLikesAsync();
-                        break;
-                    case Tables.DisLike:
-                        await LoadDislikesAsync();
-                        break;
-                    case Tables.View:
-                        await LoadViewsAsync();
-                        break;
                     case Tables.ServerLog:
                         await LoadLogsAsync();
                         break;
@@ -302,30 +290,6 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                 CurrentPage, PageSize, sortBy: null, SortIsAscending);
             foreach (var comment in comments)
                 Records.Add(new CommentItemControl { DataContext = comment });
-        }
-
-        private async Task LoadLikesAsync()
-        {
-            var likes = await _apiService.GetListAsync<GetLikeResponse>(
-                CurrentPage, PageSize, sortBy: null, SortIsAscending);
-            foreach (var like in likes)
-                Records.Add(new LikeItemControl { DataContext = like });
-        }
-
-        private async Task LoadDislikesAsync()
-        {
-            var dislikes = await _apiService.GetListAsync<GetDislikeResponse>(
-                CurrentPage, PageSize, sortBy: null, SortIsAscending);
-            foreach (var dislike in dislikes)
-                Records.Add(new DislikeItemControl { DataContext = dislike });
-        }
-
-        private async Task LoadViewsAsync()
-        {
-            var views = await _apiService.GetListAsync<GetViewResponse>(
-                CurrentPage, PageSize, sortBy: null, SortIsAscending);
-            foreach (var view in views)
-                Records.Add(new ViewItemControl { DataContext = view });
         }
 
         private async Task LoadLogsAsync()
@@ -414,18 +378,6 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                     case Tables.Comment:
                         var comment = await _apiService.GetByIdAsync<GetCommentResponse>(id);
                         Records.Add(new CommentItemControl { DataContext = comment });
-                        break;
-                    case Tables.Like:
-                        var like = await _apiService.GetByIdAsync<GetLikeResponse>(id);
-                        Records.Add(new LikeItemControl { DataContext = like });
-                        break;
-                    case Tables.DisLike:
-                        var dislike = await _apiService.GetByIdAsync<GetDislikeResponse>(id);
-                        Records.Add(new DislikeItemControl { DataContext = dislike });
-                        break;
-                    case Tables.View:
-                        var view = await _apiService.GetByIdAsync<GetViewResponse>(id);
-                        Records.Add(new ViewItemControl { DataContext = view });
                         break;
                     case Tables.ServerLog:
                         var log = await _apiService.GetByIdAsync<GetServerLogResponse>(id);
@@ -567,7 +519,10 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
             _tokenHandler.SetToken(null);
             var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
             loginWindow.Show();
-            Application.Current.Windows.OfType<MainWindow>().FirstOrDefault()?.Close();
+            var mainWindow = Application.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+            mainWindow?.Close();
+            if (mainWindow == null)
+                Application.Current.Shutdown();
         }
 
         [RelayCommand]

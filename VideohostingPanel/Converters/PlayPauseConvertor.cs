@@ -13,9 +13,9 @@ namespace VideohostingPanel.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is bool isPause && isPause)
-                return "/Resources/Images/ic_pause.png";
-            else
                 return "/Resources/Images/ic_play.png";
+            else
+                return "/Resources/Images/ic_pause.png"; 
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

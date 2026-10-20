@@ -19,7 +19,7 @@
     </Window.Resources>
 
     <!-- Основной контейнер с тенью -->
-    <Border CornerRadius="20" Background="Transparent">
+    <Border x:Name="RootBorder" CornerRadius="20" Background="Transparent">
         <Border.Effect>
             <DropShadowEffect Color="#8A2BE2" BlurRadius="30" Opacity="0.5" ShadowDepth="0"/>
         </Border.Effect>

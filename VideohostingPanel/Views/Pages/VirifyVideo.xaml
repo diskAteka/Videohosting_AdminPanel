@@ -7,7 +7,7 @@
       mc:Ignorable="d"
       d:DesignHeight="800" d:DesignWidth="1200"
       Title="VerifyVideoPage"
-      MinWidth="1200" MinHeight="800"
+      MinWidth="1200" MinHeight="600"
       Background="Transparent">
 
     <Page.Resources>
@@ -22,7 +22,7 @@
         </ResourceDictionary>
     </Page.Resources>
 
-    <Grid Margin="0,0,0,0">
+    <Grid x:Name="RootGrid" Margin="0,0,0,0">
         <Grid.Background>
             <RadialGradientBrush Center="0.8,0.2" RadiusX="1.2" RadiusY="1.2">
                 <GradientStop Color="#2D0B4A" Offset="0"/>
@@ -30,7 +30,7 @@
             </RadialGradientBrush>
         </Grid.Background>
 
-        <Grid Margin="20">
+        <Grid x:Name="ContentGrid" Margin="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -38,7 +38,7 @@
             </Grid.RowDefinitions>
 
             <!-- Кнопка назад -->
-            <Border Grid.Row="0" Background="Transparent" Margin="0,0,0,10" HorizontalAlignment="Left">
+            <Border x:Name="BackButtonPanel" Grid.Row="0" Background="Transparent" Margin="0,0,0,10" HorizontalAlignment="Left">
                 <Button Command="{Binding GoBackCommand}"
                         Style="{StaticResource BaseButtonStyle}"
                         Background="{StaticResource DarkBackgroundBrush}"
@@ -51,7 +51,7 @@
             </Border>
 
             <!-- Контейнер для формы -->
-            <Border Grid.Row="1"
+            <Border x:Name="FormBorder" Grid.Row="1"
                     Background="{StaticResource DarkSecondaryBrush}"
                     CornerRadius="20"
                     BorderBrush="{StaticResource PrimaryPurpleBrush}"
@@ -64,7 +64,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- Заголовок -->
-                    <Border Grid.Row="0"
+                    <Border x:Name="FormHeader" Grid.Row="0"
                             Background="{StaticResource HeaderGradient}"
                             CornerRadius="20,20,0,0" Height="70">
                         <TextBlock Text="Верификация видео" FontSize="24" FontWeight="Bold"
@@ -72,11 +72,11 @@
                     </Border>
 
                     <!-- Форма -->
-                    <ScrollViewer Grid.Row="1" Style="{StaticResource BaseScrollViewerStyle}"
+                    <ScrollViewer x:Name="FormScroll" Grid.Row="1" Style="{StaticResource BaseScrollViewerStyle}"
                                   VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Margin="20">
+                        <StackPanel x:Name="FormStack" Margin="20">
                             <!-- Информация о видео -->
-                            <Border Background="{StaticResource DarkTertiaryBrush}" CornerRadius="15" Padding="20" Margin="0,0,0,20">
+                            <Border x:Name="VideoInfoPanel" Background="{StaticResource DarkTertiaryBrush}" CornerRadius="15" Padding="20" Margin="0,0,0,20">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
@@ -103,7 +103,7 @@
                                 </Grid>
                             </Border>
 
-                            <Border Height="420" Margin="0,0,0,20" Background="Black"
+                            <Border x:Name="VideoContainer" Height="420" MinHeight="260" Margin="0,0,0,20" Background="Black"
                                     BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1"
                                     CornerRadius="15" ClipToBounds="True">
                                 <Grid>
@@ -127,8 +127,8 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <Border Grid.Row="1" Background="#CC000000" CornerRadius="0,0,15,15">
-                                        <Grid>
+                                    <Border x:Name="ControlsBorder" Grid.Row="1" Background="#CC000000" CornerRadius="0,0,15,15" Padding="10,6">
+                                        <Grid VerticalAlignment="Center">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
@@ -139,32 +139,36 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <Button Grid.Column="0" Command="{Binding PlayPauseCommand}"
-                                                    Style="{StaticResource PlayerControlButtonStyle}">
+                                                    Style="{StaticResource PlayerControlButtonStyle}"
+                                                    VerticalAlignment="Center">
                                                 <Image Source="{Binding IsPause, Converter={StaticResource PlayPauseConvertor}}" Width="16" Height="16"/>
                                             </Button>
                                             <TextBlock Grid.Column="1" Text="{Binding CurrentTime}" Foreground="White"
-                                                        VerticalAlignment="Center" Margin="5,0" FontSize="12"/>
+                                                        VerticalAlignment="Center" Margin="8,0,5,0" FontSize="12"/>
                                             <Slider Grid.Column="2"
-                                                    Value="{Binding VideoSliderPosition}"
+                                                    Value="{Binding VideoSliderPosition, Mode=OneWay}"
                                                     Minimum="0" Maximum="1"
                                                     Style="{StaticResource VideoSliderStyle}"
                                                     VerticalAlignment="Center" Margin="5,0"
                                                     PreviewMouseDown="VideoSlider_PreviewMouseDown"
-                                                    PreviewMouseUp="VideoSlider_PreviewMouseUp"/>
+                                                    PreviewMouseUp="VideoSlider_PreviewMouseUp"
+                                                    LostMouseCapture="VideoSlider_LostMouseCapture"/>
                                             <TextBlock Grid.Column="3" Text="{Binding TotalTime}" Foreground="White"
-                                                        VerticalAlignment="Center" Margin="5,0" FontSize="12"/>
+                                                        VerticalAlignment="Center" Margin="5,0,8,0" FontSize="12"/>
                                             <Button Grid.Column="4" Command="{Binding MuteUnmuteCommand}"
-                                                    Style="{StaticResource PlayerControlButtonStyle}">
+                                                    Style="{StaticResource PlayerControlButtonStyle}"
+                                                    VerticalAlignment="Center">
                                                 <Image Source="{Binding IsMute, Converter={StaticResource MuteSoundConverter}}" Width="16" Height="16"/>
                                             </Button>
                                             <Slider Grid.Column="5"
-                                                    Value="{Binding VolumeSliderPosition}"
+                                                    Value="{Binding VolumeSliderPosition, Mode=TwoWay}"
                                                     Minimum="0" Maximum="1"
                                                     Style="{StaticResource VideoSliderStyle}"
                                                     Width="80" VerticalAlignment="Center" Margin="5,0"
                                                     ValueChanged="VolumeSlider_ValueChanged"/>
                                             <Button Grid.Column="6" Command="{Binding ToggleFullScreenCommand}"
                                                     Style="{StaticResource PlayerControlButtonStyle}"
+                                                    VerticalAlignment="Center"
                                                     ToolTip="Полный экран (F11)">
                                                 <Image Source="/Resources/Images/FullScreen.png" Width="16" Height="16"/>
                                             </Button>
@@ -175,7 +179,7 @@
                             
 
                             <!-- Дополнительная информация -->
-                            <Border Background="{StaticResource DarkTertiaryBrush}" CornerRadius="15" Padding="20" Margin="0,0,0,20">
+                            <Border x:Name="ExtraInfoPanel" Background="{StaticResource DarkTertiaryBrush}" CornerRadius="15" Padding="20" Margin="0,0,0,20">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <StackPanel Orientation="Horizontal" Margin="0,0,30,0">
                                         <Image Source="/Resources/Images/ic_view.png" Width="20" Height="20" Margin="0,0,10,0"/>
@@ -206,14 +210,14 @@
                             </Border>
 
                             <!-- Сообщение о результате -->
-                            <TextBlock Text="{Binding StatusMessage}" FontSize="14" FontWeight="SemiBold"
+                            <TextBlock x:Name="StatusText" Text="{Binding StatusMessage}" FontSize="14" FontWeight="SemiBold"
                                        HorizontalAlignment="Center" Margin="0,10"
                                        Foreground="{Binding StatusColor}"/>
                         </StackPanel>
                     </ScrollViewer>
 
                     <!-- Кнопки действий -->
-                    <Border Grid.Row="2" Background="{StaticResource DarkTertiaryBrush}" CornerRadius="0,0,20,20" Padding="20">
+                    <Border x:Name="ActionButtonsPanel" Grid.Row="2" Background="{StaticResource DarkTertiaryBrush}" CornerRadius="0,0,20,20" Padding="20">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -229,8 +233,66 @@
                     </Border>
                 </Grid>
             </Border>
-
-            <Border Grid.Row="2" Height="10" Background="Transparent"/>
         </Grid>
+
+        <!-- Оверлей системных кнопок окна: виден только в полноэкранном режиме -->
+        <StackPanel x:Name="FullScreenWindowButtons"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,10,15,0"
+                    Panel.ZIndex="100"
+                    Visibility="Collapsed">
+            <Button x:Name="FullScreenMinimizeButton"
+                    Width="35" Height="35"
+                    Background="#B3000000" BorderThickness="0"
+                    Margin="5,0,0,0" Cursor="Hand"
+                    ToolTip="Свернуть"
+                    Click="FullScreenMinimize_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                            <Rectangle Width="12" Height="2" Fill="White"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+            <Button x:Name="FullScreenRestoreButton"
+                    Width="35" Height="35"
+                    Background="#B3000000" BorderThickness="0"
+                    Margin="5,0,0,0" Cursor="Hand"
+                    ToolTip="Выйти из полноэкранного режима (Esc)"
+                    Click="FullScreenRestore_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                            <Path Width="11" Height="11"
+                                  Data="M0,3 L8,3 L8,11 L0,11 Z M6,0 L14,0 L14,8"
+                                  Stroke="White" StrokeThickness="1.5" Fill="Transparent"
+                                  Stretch="Uniform"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+            <Button x:Name="FullScreenCloseButton"
+                    Width="35" Height="35"
+                    Background="#B3C42B1C" BorderThickness="0"
+                    Margin="5,0,0,0" Cursor="Hand"
+                    ToolTip="Закрыть приложение"
+                    Click="FullScreenClose_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                            <Path Width="10" Height="10"
+                                  Data="M0,0 L10,10 M10,0 L0,10"
+                                  Stroke="White" StrokeThickness="1.5"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
     </Grid>
 </Page>

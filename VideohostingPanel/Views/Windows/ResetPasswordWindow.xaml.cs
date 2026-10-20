@@ -202,8 +202,8 @@ namespace VideohostingPanel.Views.Windows
             };
 
             var transform = new ScaleTransform(0.9, 0.9);
-            this.RenderTransform = transform;
-            this.RenderTransformOrigin = new Point(0.5, 0.5);
+            RootBorder.RenderTransform = transform;
+            RootBorder.RenderTransformOrigin = new Point(0.5, 0.5);
 
             transform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnimation);
             transform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnimation);
