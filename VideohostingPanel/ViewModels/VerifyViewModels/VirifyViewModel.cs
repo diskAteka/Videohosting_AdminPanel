@@ -24,6 +24,9 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         private long _pendingSeekMs = -1;
         private bool _seekWorkerRunning;
 
+        // ДИАГНОСТИКА: защита от повторной очистки (страница может выгружаться дважды).
+        private bool _disposed;
+
         #region Свойства для разметки
 
         [ObservableProperty]
@@ -104,19 +107,37 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         [RelayCommand]
         public async Task LoadVideo()
         {
+            // ДИАГНОСТИКА: тут подозрение на зависание (poster + stream url + VLC Play).
+            var op = DiagLog.Begin("VM.LoadVideo", $"videoId={Video?.Id} thread={Environment.CurrentManagedThreadId}");
             try
             {
                 if (!string.IsNullOrEmpty(Video.Poster))
+                {
+                    DiagLog.Mark("VM.LoadVideo", "before PosterLoader");
                     PosterImageSource = await PosterLoader.LoadAsync(Video.Id);
+                    DiagLog.Mark("VM.LoadVideo", "after PosterLoader");
+                }
 
                 if (_vlcPlayer != null)
                 {
+                    DiagLog.Mark("VM.LoadVideo", "before GetStreamUrlAsync");
                     var streamUrl = await _apiService.GetStreamUrlAsync(Video.Id);
+                    DiagLog.Mark("VM.LoadVideo", "after GetStreamUrlAsync", "play");
+
                     _vlcPlayer.Play(new Uri(streamUrl));
+                    DiagLog.Mark("VM.LoadVideo", "after VLC Play");
                 }
+                else
+                {
+                    DiagLog.Mark("VM.LoadVideo", "_vlcPlayer == null — Play не вызван");
+                }
+
+                DiagLog.End(op);
             }
             catch (Exception ex)
             {
+                DiagLog.Write("EXC", "VM.LoadVideo: " + ex);
+                DiagLog.End(op, "exception");
                 StatusMessage = $"Ошибка загрузки: {ex.Message}";
                 StatusColor = "#FF4444";
             }
@@ -125,15 +146,27 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         [RelayCommand]
         public void PlayPause()
         {
-            if (_vlcPlayer?.IsPlaying == true)
+            var op = DiagLog.Begin("VM.PlayPause");
+            try
             {
-                _vlcPlayer.Pause();
-                IsPause = true;
+                if (_vlcPlayer?.IsPlaying == true)
+                {
+                    DiagLog.Mark("VM.PlayPause", "before Pause");
+                    _vlcPlayer.Pause();
+                    DiagLog.Mark("VM.PlayPause", "after Pause");
+                    IsPause = true;
+                }
+                else
+                {
+                    DiagLog.Mark("VM.PlayPause", "before Play (resume)");
+                    _vlcPlayer?.Play();
+                    DiagLog.Mark("VM.PlayPause", "after Play (resume)");
+                    IsPause = false;
+                }
             }
-            else
+            finally
             {
-                _vlcPlayer?.Play();
-                IsPause = false;
+                DiagLog.End(op);
             }
         }
 
@@ -141,28 +174,45 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         public void SeekVideo(double position)
         {
             if (_vlcPlayer == null)
+            {
+                DiagLog.Mark("VM.SeekVideo", "_vlcPlayer == null");
                 return;
+            }
 
-            var totalTime = _vlcPlayer.Length;
-            if (totalTime <= 0)
-                return;
+            // ДИАГНОСТИКА: чтение Length на UI-потоке — подозреваемый №1
+            // (libvlc берёт input-lock и может ждать переоткрытия сетевого потока).
+            var op = DiagLog.Begin("VM.SeekVideo", $"position={position:0.000}");
+            try
+            {
+                DiagLog.Mark("VM.SeekVideo", "before _vlcPlayer.Length");
+                var totalTime = _vlcPlayer.Length;
+                DiagLog.Mark("VM.SeekVideo", $"after Length={totalTime}");
 
-            if (position < 0) position = 0;
-            if (position > 1) position = 1;
+                if (totalTime <= 0)
+                    return;
 
-            var newTime = (long)(totalTime * position);
+                if (position < 0) position = 0;
+                if (position > 1) position = 1;
 
-            // Не даём перемотке попасть ровно в конец: VLC в этот момент
-            // останавливает воспроизведение и обрывает сетевой поток.
-            if (totalTime > 1000 && newTime > totalTime - 1000)
-                newTime = totalTime - 1000;
+                var newTime = (long)(totalTime * position);
 
-            VideoSliderPosition = position;
+                // Не даём перемотке попасть ровно в конец: VLC в этот момент
+                // останавливает воспроизведение и обрывает сетевой поток.
+                if (totalTime > 1000 && newTime > totalTime - 1000)
+                    newTime = totalTime - 1000;
 
-            // Перемотка сетевого потока занимает время (VLC переоткрывает соединение
-            // с S3), поэтому выполняется в фоне. Запросы сериализуются: пока идёт
-            // предыдущая перемотка, новый запрос только заменяет целевое время.
-            EnqueueSeek(newTime);
+                VideoSliderPosition = position;
+
+                // Перемотка сетевого потока занимает время (VLC переоткрывает соединение
+                // с S3), поэтому выполняется в фоне. Запросы сериализуются: пока идёт
+                // предыдущая перемотка, новый запрос только заменяет целевое время.
+                EnqueueSeek(newTime);
+                DiagLog.Mark("VM.SeekVideo", $"enqueued {newTime}ms");
+            }
+            finally
+            {
+                DiagLog.End(op);
+            }
         }
 
         private void EnqueueSeek(long targetMs)
@@ -173,16 +223,21 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
                 _isSeeking = true;
 
                 if (_seekWorkerRunning)
+                {
+                    DiagLog.Mark("VM.EnqueueSeek", "worker уже работает, только заменили цель");
                     return;
+                }
 
                 _seekWorkerRunning = true;
             }
 
+            DiagLog.Mark("VM.EnqueueSeek", $"запуск SeekWorker, target={targetMs}");
             Task.Run(SeekWorker);
         }
 
         private void SeekWorker()
         {
+            DiagLog.Write("SEEK", "SeekWorker: старт (thread pool)");
             while (true)
             {
                 long target;
@@ -192,6 +247,7 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
                     {
                         _seekWorkerRunning = false;
                         _isSeeking = false;
+                        DiagLog.Write("SEEK", "SeekWorker: очередь пуста, выход");
                         return;
                     }
 
@@ -201,29 +257,64 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
 
                 var player = _vlcPlayer;
                 if (player == null)
-                    continue;
+                {
+                    // ДИАГНОСТИКА: раньше здесь был бесконечный busy-loop при Dispose плеера.
+                    DiagLog.Write("SEEK", "SeekWorker: player == null — выходим, чтобы не крутить холостой цикл");
+                    lock (_seekLock)
+                    {
+                        _seekWorkerRunning = false;
+                        _isSeeking = false;
+                    }
+                    return;
+                }
 
+                var op = DiagLog.Begin("SeekWorker.player.Time", $"target={target}ms");
                 try
                 {
+                    DiagLog.Mark("SeekWorker", "before player.Time = target");
                     player.Time = target;
+                    DiagLog.Mark("SeekWorker", "after player.Time = target");
+                    DiagLog.End(op);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    DiagLog.Write("SEEK", "SeekWorker: player.Time бросил " + ex.GetType().Name + ": " + ex.Message);
+
                     // VLC может бросить IOException при переоткрытии потока — не фатально.
+                    var fallback = DiagLog.Begin("SeekWorker.fallback", $"target={target}ms");
                     try
                     {
+                        DiagLog.Mark("SeekWorker", "fallback: before IsPlaying");
                         var wasPlaying = player.IsPlaying;
+                        DiagLog.Mark("SeekWorker", $"fallback: IsPlaying={wasPlaying}");
+
                         if (wasPlaying)
+                        {
+                            DiagLog.Mark("SeekWorker", "fallback: before Pause");
                             player.Pause();
+                            DiagLog.Mark("SeekWorker", "fallback: after Pause");
+                        }
 
+                        DiagLog.Mark("SeekWorker", "fallback: before player.Time");
                         player.Time = target;
+                        DiagLog.Mark("SeekWorker", "fallback: after player.Time");
 
                         if (wasPlaying)
+                        {
+                            DiagLog.Mark("SeekWorker", "fallback: before Play");
                             player.Play();
+                            DiagLog.Mark("SeekWorker", "fallback: after Play");
+                        }
                     }
-                    catch
+                    catch (Exception fallbackEx)
                     {
                         // Поток уже переоткрыт/остановлен.
+                        DiagLog.Write("SEEK", "SeekWorker fallback бросил: " + fallbackEx.GetType().Name);
+                    }
+                    finally
+                    {
+                        DiagLog.End(fallback, "fallback done");
+                        DiagLog.End(op, "exception");
                     }
                 }
             }
@@ -234,8 +325,18 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         {
             if (_vlcPlayer != null)
             {
-                IsMute = !IsMute;
-                _vlcPlayer.Audio.IsMute = IsMute;
+                var op = DiagLog.Begin("VM.MuteUnmute");
+                try
+                {
+                    IsMute = !IsMute;
+                    DiagLog.Mark("VM.MuteUnmute", $"before Audio.IsMute={IsMute}");
+                    _vlcPlayer.Audio.IsMute = IsMute;
+                    DiagLog.Mark("VM.MuteUnmute", "after Audio.IsMute");
+                }
+                finally
+                {
+                    DiagLog.End(op);
+                }
             }
         }
 
@@ -244,50 +345,103 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         {
             if (_vlcPlayer != null)
             {
-                _vlcPlayer.Audio.Volume = (int)(volume * 100);
+                var op = DiagLog.Begin("VM.VolumeChanged", $"volume={volume:0.00}");
+                try
+                {
+                    DiagLog.Mark("VM.VolumeChanged", "before Audio.Volume");
+                    _vlcPlayer.Audio.Volume = (int)(volume * 100);
+                    DiagLog.Mark("VM.VolumeChanged", "after Audio.Volume");
+                }
+                finally
+                {
+                    DiagLog.End(op);
+                }
             }
         }
 
         [RelayCommand]
         public async Task Approve()
         {
+            // ДИАГНОСТИКА: жалоба «зависает при нажатии Принять».
+            var op = DiagLog.Begin("VM.Approve", $"videoId={Video?.Id}");
             try
             {
-                if (Video == null) return;
+                if (Video == null)
+                {
+                    DiagLog.Mark("VM.Approve", "Video == null — выходим");
+                    return;
+                }
 
-                await _apiService.VerifyVideoAsync(Video.Id);
+                try
+                {
+                    DiagLog.Mark("VM.Approve", "before VerifyVideoAsync");
+                    await _apiService.VerifyVideoAsync(Video.Id);
+                    DiagLog.Mark("VM.Approve", "after VerifyVideoAsync");
+                }
+                catch (Exception ex)
+                {
+                    DiagLog.Write("EXC", "VM.Approve HTTP: " + ex);
+                    StatusMessage = $"Ошибка: {ex.Message}";
+                    StatusColor = "#FF4444";
+                    return;
+                }
 
                 // После успешной верификации закрываем страницу так же, как по кнопке «Назад»,
                 // иначе пользователь остаётся на уже обработанном видео.
+                DiagLog.Mark("VM.Approve", "before GoBack");
                 GoBack();
+                DiagLog.Mark("VM.Approve", "after GoBack");
             }
-            catch (Exception ex)
+            finally
             {
-                StatusMessage = $"Ошибка: {ex.Message}";
-                StatusColor = "#FF4444";
+                DiagLog.End(op);
             }
         }
 
         [RelayCommand]
         public async Task Reject()
         {
+            var op = DiagLog.Begin("VM.Reject", $"videoId={Video?.Id} reasonLen={RejectReason?.Length ?? 0}");
             try
             {
+                DiagLog.Mark("VM.Reject", "before GoBack");
                 GoBack();
+                DiagLog.Mark("VM.Reject", "after GoBack");
+                await Task.CompletedTask;
             }
             catch (Exception ex)
             {
+                DiagLog.Write("EXC", "VM.Reject: " + ex);
                 StatusMessage = $"Ошибка: {ex.Message}";
                 StatusColor = "#FF4444";
+            }
+            finally
+            {
+                DiagLog.End(op);
             }
         }
 
         [RelayCommand]
         public void GoBack()
         {
-            _vlcPlayer?.Stop();
-            _updateTimer?.Stop();
-            OnGoBackRequested?.Invoke();
+            var op = DiagLog.Begin("VM.GoBack");
+            try
+            {
+                _updateTimer?.Stop();
+
+                // ВАЖНО: сначала уходим со страницы, и только потом трогаем libvlc.
+                // Раньше Stop() вызывался первым — на UI-потоке, до навигации:
+                // если libvlc зависал, приложение намертво замирало на экране видео.
+                // Теперь пользователь мгновенно возвращается к списку, а плеер
+                // освобождает Cleanup() при выгрузке страницы.
+                DiagLog.Mark("VM.GoBack", "before OnGoBackRequested");
+                OnGoBackRequested?.Invoke();
+                DiagLog.Mark("VM.GoBack", "after OnGoBackRequested (страница скрыта)");
+            }
+            finally
+            {
+                DiagLog.End(op);
+            }
         }
 
         #endregion
@@ -300,10 +454,12 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
 
         #region VLC Events
 
-        private void VlcPlayer_Playing(object sender, VlcMediaPlayerPlayingEventArgs e)
+        private void VlcPlayer_Playing(object? sender, VlcMediaPlayerPlayingEventArgs e)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            DiagLog.Mark("VLC.Playing", "event fired");
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
+                DiagLog.Mark("VLC.Playing", "inside Dispatcher.Invoke");
                 IsVideoLoading = false;
                 IsPause = false;
                 if (_vlcPlayer != null)
@@ -312,26 +468,29 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
             });
         }
 
-        private void VlcPlayer_Paused(object sender, VlcMediaPlayerPausedEventArgs e)
+        private void VlcPlayer_Paused(object? sender, VlcMediaPlayerPausedEventArgs e)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            DiagLog.Mark("VLC.Paused", "event fired");
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 IsPause = true;
             });
         }
 
-        private void VlcPlayer_Opening(object sender, VlcMediaPlayerOpeningEventArgs e)
+        private void VlcPlayer_Opening(object? sender, VlcMediaPlayerOpeningEventArgs e)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            DiagLog.Mark("VLC.Opening", "event fired");
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 StatusMessage = "Загрузка видео...";
                 StatusColor = "White";
             });
         }
 
-        private void VlcPlayer_EncounteredError(object sender, VlcMediaPlayerEncounteredErrorEventArgs e)
+        private void VlcPlayer_EncounteredError(object? sender, VlcMediaPlayerEncounteredErrorEventArgs e)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            DiagLog.Write("VLC", "EncounteredError event fired");
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 IsVideoLoading = false;
                 StatusMessage = "Не удалось воспроизвести видео";
@@ -339,16 +498,17 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
             });
         }
 
-        private void VlcPlayer_Stopped(object sender, VlcMediaPlayerStoppedEventArgs e)
+        private void VlcPlayer_Stopped(object? sender, VlcMediaPlayerStoppedEventArgs e)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            DiagLog.Mark("VLC.Stopped", "event fired");
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 _updateTimer.Stop();
                 IsPause = true;
             });
         }
 
-        private void VlcPlayer_TimeChanged(object sender, VlcMediaPlayerTimeChangedEventArgs e)
+        private void VlcPlayer_TimeChanged(object? sender, VlcMediaPlayerTimeChangedEventArgs e)
         {
             if (IsDragging || _isSeeking)
                 return;
@@ -357,35 +517,58 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
             // из VLC и вызывает Seek → зависание. Обновляем только вне перетаскивания.
             System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                var currentTime = TimeSpan.FromMilliseconds(e.NewTime);
-                CurrentTime = $"{currentTime.Minutes:D2}:{currentTime.Seconds:D2}";
-
-                if (_vlcPlayer.Length > 0)
+                // ДИАГНОСТИКА: _vlcPlayer.Length читается на UI-потоке ~1 раз/сек.
+                // Если UI подвиснет — в hang-логе останется BEGIN без END для UI.TimeChanged.
+                var op = DiagLog.Begin("UI.TimeChanged", $"newTime={e.NewTime}");
+                try
                 {
-                    VideoSliderPosition = (double)e.NewTime / _vlcPlayer.Length;
+                    var currentTime = TimeSpan.FromMilliseconds(e.NewTime);
+                    CurrentTime = $"{currentTime.Minutes:D2}:{currentTime.Seconds:D2}";
+
+                    var player = _vlcPlayer;
+                    if (player == null)
+                        return;
+
+                    DiagLog.Mark("UI.TimeChanged", "before _vlcPlayer.Length");
+                    var length = player.Length;
+                    DiagLog.Mark("UI.TimeChanged", $"after Length={length}");
+
+                    if (length > 0)
+                    {
+                        VideoSliderPosition = (double)e.NewTime / length;
+                    }
+                }
+                finally
+                {
+                    DiagLog.End(op);
                 }
             }, System.Windows.Threading.DispatcherPriority.Background);
         }
 
-        private void VlcPlayer_LengthChanged(object sender, VlcMediaPlayerLengthChangedEventArgs e)
+        private void VlcPlayer_LengthChanged(object? sender, VlcMediaPlayerLengthChangedEventArgs e)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            DiagLog.Mark("VLC.LengthChanged", $"newLength={e.NewLength}");
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 var totalTime = TimeSpan.FromMilliseconds(e.NewLength);
                 TotalTime = $"{totalTime.Minutes:D2}:{totalTime.Seconds:D2}";
             });
         }
 
-        private void VlcPlayer_EndReached(object sender, VlcMediaPlayerEndReachedEventArgs e)
+        private void VlcPlayer_EndReached(object? sender, VlcMediaPlayerEndReachedEventArgs e)
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            DiagLog.Mark("VLC.EndReached", "event fired");
+            // НЕ блокируем поток libvlc: Invoke из колбэка + Stop() на UI = deadlock.
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
+                DiagLog.Mark("VLC.EndReached", "inside InvokeAsync, before Stop");
                 IsPause = true;
-                _vlcPlayer.Stop();
+                _vlcPlayer?.Stop();
+                DiagLog.Mark("VLC.EndReached", "after Stop");
             });
         }
 
-        private void UpdateTimer_Tick(object sender, EventArgs e)
+        private void UpdateTimer_Tick(object? sender, EventArgs e)
         {
             // Дополнительные обновления если нужно
         }
@@ -395,54 +578,71 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         #region Вспомогательные методы
         public void InitializeVlcPlayer(VlcControl vlcPlayer)
         {
-            _vlcPlayer = vlcPlayer;
-
-            _vlcPlayer.VlcLibDirectory = new DirectoryInfo(
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, 
-                AppConfig.VLC_LIB_DIRECTORY));
-
-            var options = new List<string>
+            var op = DiagLog.Begin("VM.InitializeVlcPlayer");
+            try
             {
-                "--network-caching=3000",  // Буферизация сети
-                "--no-video-title-show",
-                "--no-snapshot-preview",
-                // Быстрый отклик на перемотку: не искать ключевой кадр с начала файла.
-                "--input-fast-seek"
-            };
+                _disposed = false;
+                _vlcPlayer = vlcPlayer;
+                DiagLog.Mark("VM.InitializeVlcPlayer", "VlcControl assigned", $"vlcControlsAlive={VlcControlTracker.Alive}");
 
-            var trustDir = Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
-                "Resources", "Certs");
+                // Настройки — из одного источника с прогревом (VlcBootstrapper),
+                // иначе прогрев разогревает одни плагины, а плеер просит другие.
+                _vlcPlayer.VlcLibDirectory = VlcBootstrapper.LibDirectory;
+                _vlcPlayer.VlcMediaplayerOptions = VlcBootstrapper.BuildOptions();
 
-            if (Directory.Exists(trustDir))
-                options.Add($"--gnutls-dir-trust={trustDir}");
+                DiagLog.Mark("VM.InitializeVlcPlayer", $"warm={VlcBootstrapper.IsWarm}");
 
-            _vlcPlayer.VlcMediaplayerOptions = options.ToArray();
+                // Подписка на события плеера
+                _vlcPlayer.Playing += VlcPlayer_Playing;
+                _vlcPlayer.Paused += VlcPlayer_Paused;
+                _vlcPlayer.Stopped += VlcPlayer_Stopped;
+                _vlcPlayer.TimeChanged += VlcPlayer_TimeChanged;
+                _vlcPlayer.LengthChanged += VlcPlayer_LengthChanged;
+                _vlcPlayer.EndReached += VlcPlayer_EndReached;
+                _vlcPlayer.Opening += VlcPlayer_Opening;
+                _vlcPlayer.EncounteredError += VlcPlayer_EncounteredError;
 
-            // Подписка на события плеера
-            _vlcPlayer.Playing += VlcPlayer_Playing;
-            _vlcPlayer.Paused += VlcPlayer_Paused;
-            _vlcPlayer.Stopped += VlcPlayer_Stopped;
-            _vlcPlayer.TimeChanged += VlcPlayer_TimeChanged;
-            _vlcPlayer.LengthChanged += VlcPlayer_LengthChanged;
-            _vlcPlayer.EndReached += VlcPlayer_EndReached;
-            _vlcPlayer.Opening += VlcPlayer_Opening;
-            _vlcPlayer.EncounteredError += VlcPlayer_EncounteredError;
+                DiagLog.Mark("VM.InitializeVlcPlayer", "events subscribed");
+            }
+            finally
+            {
+                DiagLog.End(op);
+            }
         }
 
+        /// <summary>Идемпотентная очистка: вызывается и из View (Unloaded), и из MainWindow (закрытие страницы).</summary>
         public void Cleanup()
         {
-            _updateTimer?.Stop();
+            var op = DiagLog.Begin("VM.Cleanup", $"alreadyDisposed={_disposed}");
+            try
+            {
+                if (_disposed)
+                {
+                    DiagLog.Mark("VM.Cleanup", "повторный вызов — игнорируем");
+                    return;
+                }
 
-            lock (_seekLock)
-            {
-                _pendingSeekMs = -1;
-            }
-            if (_vlcPlayer != null)
-            {
+                _disposed = true;
+                _updateTimer?.Stop();
+
+                lock (_seekLock)
+                {
+                    _pendingSeekMs = -1;
+                }
+
+                if (_vlcPlayer == null)
+                {
+                    DiagLog.Mark("VM.Cleanup", "_vlcPlayer == null — нечего освобождать");
+                    return;
+                }
+
                 if (IsFullScreen)
+                {
+                    DiagLog.Mark("VM.Cleanup", "IsFullScreen -> false");
                     IsFullScreen = false;
+                }
 
+                DiagLog.Mark("VM.Cleanup", "unsubscribing VLC events");
                 _vlcPlayer.Playing -= VlcPlayer_Playing;
                 _vlcPlayer.Paused -= VlcPlayer_Paused;
                 _vlcPlayer.Stopped -= VlcPlayer_Stopped;
@@ -452,8 +652,42 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
                 _vlcPlayer.Opening -= VlcPlayer_Opening;
                 _vlcPlayer.EncounteredError -= VlcPlayer_EncounteredError;
 
-                _vlcPlayer.Stop();
-                _vlcPlayer.Dispose();
+                // ДИАГНОСТИКА: Stop/Dispose на UI-потоке — главный подозреваемый в «вечном» зависании.
+                // Каждый шаг пишется отдельно: если зависание здесь — в hang-логе будет
+                // BEGIN без END для VM.Cleanup + минидамп со стеком.
+                var stopOp = DiagLog.Begin("VM.Cleanup.Stop");
+                try
+                {
+                    DiagLog.Mark("VM.Cleanup", "before VLC Stop");
+                    _vlcPlayer.Stop();
+                    DiagLog.Mark("VM.Cleanup", "after VLC Stop");
+                    DiagLog.End(stopOp);
+                }
+                catch (Exception ex)
+                {
+                    DiagLog.Write("EXC", "VM.Cleanup Stop: " + ex);
+                    DiagLog.End(stopOp, "exception");
+                }
+
+                var disposeOp = DiagLog.Begin("VM.Cleanup.Dispose");
+                try
+                {
+                    DiagLog.Mark("VM.Cleanup", "before VLC Dispose");
+                    _vlcPlayer.Dispose();
+                    DiagLog.Mark("VM.Cleanup", "after VLC Dispose", $"vlcControlsAlive={VlcControlTracker.Alive}");
+                    DiagLog.End(disposeOp);
+                }
+                catch (Exception ex)
+                {
+                    DiagLog.Write("EXC", "VM.Cleanup Dispose: " + ex);
+                    DiagLog.End(disposeOp, "exception");
+                }
+
+                _vlcPlayer = null;
+            }
+            finally
+            {
+                DiagLog.End(op);
             }
         }
 
