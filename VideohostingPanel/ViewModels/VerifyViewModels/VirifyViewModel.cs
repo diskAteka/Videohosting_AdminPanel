@@ -24,6 +24,30 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         private long _pendingSeekMs = -1;
         private bool _seekWorkerRunning;
 
+        // Целевое время текущей перемотки и момент её выдачи воркеру.
+        // Нужны, чтобы отличить «VLC доехал до цели» от «VLC ещё показывает
+        // старое время» и не откатывать бегунок назад.
+        private long _seekTargetMs = -1;
+        private long _seekIssuedAt;
+
+        // Эпоха перемотки. Увеличивается на каждый клик по ползунку и позволяет
+        // отбросить события TimeChanged, которые VLC сгенерировал ДО клика:
+        // они уже стояли в очереди диспетчера и, выполнившись после, затирали
+        // выставленную пользователем позицию бегунка.
+        private long _seekEpoch;
+
+        // Окно, в течение которого после выдачи seek VLC ещё может присылать
+        // времена из старого буфера (наблюдалось до ~150 мс). Подтверждением
+        // считаем только время, пришедшее после этого окна.
+        private const long SeekSettleMs = 600;
+
+        // Допуск при подтверждении перемотки: VLC при точном seek всё равно
+        // встаёт на ключевой кадр, поэтому точного совпадения не ждём.
+        private const long SeekConfirmToleranceMs = 1500;
+
+        // Сколько ждём подтверждения, прежде чем принудительно разблокировать бегунок.
+        private const long SeekConfirmTimeoutMs = 4000;
+
         // ДИАГНОСТИКА: защита от повторной очистки (страница может выгружаться дважды).
         private bool _disposed;
 
@@ -79,12 +103,6 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
 
         [ObservableProperty]
         private string _statusColor = "White";
-
-        [ObservableProperty]
-        private string _rejectReason = "";
-
-        [ObservableProperty]
-        private bool _isRejectReasonVisible;
 
         #endregion
 
@@ -206,6 +224,12 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
                 // Перемотка сетевого потока занимает время (VLC переоткрывает соединение
                 // с S3), поэтому выполняется в фоне. Запросы сериализуются: пока идёт
                 // предыдущая перемотка, новый запрос только заменяет целевое время.
+                // Порядок важен: сначала поднимаем флаг, потом сдвигаем эпоху. Тогда
+                // любое событие TimeChanged, захваченное после этой точки, либо видит
+                // _isSeeking, либо имеет устаревшую эпоху — и не затирает точку клика.
+                _isSeeking = true;
+                Volatile.Write(ref _seekIssuedAt, Environment.TickCount64);
+                Interlocked.Increment(ref _seekEpoch);
                 EnqueueSeek(newTime);
                 DiagLog.Mark("VM.SeekVideo", $"enqueued {newTime}ms");
             }
@@ -220,7 +244,9 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
             lock (_seekLock)
             {
                 _pendingSeekMs = targetMs;
+                _seekTargetMs = targetMs;
                 _isSeeking = true;
+                _seekIssuedAt = Environment.TickCount64;
 
                 if (_seekWorkerRunning)
                 {
@@ -245,14 +271,17 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
                 {
                     if (_pendingSeekMs < 0)
                     {
+                        // Цель выдана плееру, но ещё не подтверждена: _isSeeking
+                        // снимает VlcPlayer_TimeChanged, когда VLC реально доедет
+                        // до цели (или по таймауту в UpdateTimer_Tick).
                         _seekWorkerRunning = false;
-                        _isSeeking = false;
                         DiagLog.Write("SEEK", "SeekWorker: очередь пуста, выход");
                         return;
                     }
 
                     target = _pendingSeekMs;
                     _pendingSeekMs = -1;
+                    _seekIssuedAt = Environment.TickCount64;
                 }
 
                 var player = _vlcPlayer;
@@ -264,6 +293,7 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
                     {
                         _seekWorkerRunning = false;
                         _isSeeking = false;
+                        _seekTargetMs = -1;
                     }
                     return;
                 }
@@ -377,6 +407,7 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
                     DiagLog.Mark("VM.Approve", "before VerifyVideoAsync");
                     await _apiService.VerifyVideoAsync(Video.Id);
                     DiagLog.Mark("VM.Approve", "after VerifyVideoAsync");
+                    _ = _apiService.LogAsync(AuditTable.Video, AuditAction.Update, $"Видео верифицировано: «{Video.Name}» (id={Video.Id})");
                 }
                 catch (Exception ex)
                 {
@@ -401,7 +432,7 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
         [RelayCommand]
         public async Task Reject()
         {
-            var op = DiagLog.Begin("VM.Reject", $"videoId={Video?.Id} reasonLen={RejectReason?.Length ?? 0}");
+            var op = DiagLog.Begin("VM.Reject", $"videoId={Video?.Id}");
             try
             {
                 DiagLog.Mark("VM.Reject", "before GoBack");
@@ -510,13 +541,47 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
 
         private void VlcPlayer_TimeChanged(object? sender, VlcMediaPlayerTimeChangedEventArgs e)
         {
-            if (IsDragging || _isSeeking)
+            if (IsDragging)
                 return;
+
+            // Запоминаем эпоху на потоке VLC: если событие пришло раньше клика,
+            // на UI оно уже не должно ничего менять.
+            var epoch = Volatile.Read(ref _seekEpoch);
+
+            // Перемотка ещё не подтверждена: VLC какое-то время продолжает отдавать
+            // СТАРОЕ время, пока не переоткроет поток. Если обновлять бегунок по нему,
+            // он откатывается назад и кажется, что клик не сработал (пользователь
+            // жмёт повторно). Ждём, пока время реально дойдёт до цели И пройдёт
+            // окно «устаканивания» — иначе первое же синхронное событие с точной
+            // целью подтверждает перемотку, а следом приходит старое время из
+            // буфера и всё равно затирает бегунок.
+            if (_isSeeking)
+            {
+                var target = Volatile.Read(ref _seekTargetMs);
+                var near = target >= 0 && Math.Abs(e.NewTime - target) <= SeekConfirmToleranceMs;
+                var settled = IsPause || Environment.TickCount64 - Volatile.Read(ref _seekIssuedAt) >= SeekSettleMs;
+
+                if (!near || !settled)
+                    return;
+
+                _isSeeking = false;
+                Volatile.Write(ref _seekTargetMs, -1);
+                DiagLog.Mark("VM.SeekConfirmed", $"newTime={e.NewTime} target={target}");
+            }
 
             // Не биндим ползунок напрямую: пока пользователь тянет его, значение приходит
             // из VLC и вызывает Seek → зависание. Обновляем только вне перетаскивания.
             System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
+                // Событие захвачено до последнего клика: VLC успел поставить его
+                // в очередь диспетчера раньше, чем пользователь перемотал. Такое
+                // время устарело — иначе оно затирает точку клика.
+                if (Volatile.Read(ref _seekEpoch) != epoch)
+                {
+                    DiagLog.Mark("UI.TimeChanged", $"stale skip (epoch {epoch} != {Volatile.Read(ref _seekEpoch)})");
+                    return;
+                }
+
                 // ДИАГНОСТИКА: _vlcPlayer.Length читается на UI-потоке ~1 раз/сек.
                 // Если UI подвиснет — в hang-логе останется BEGIN без END для UI.TimeChanged.
                 var op = DiagLog.Begin("UI.TimeChanged", $"newTime={e.NewTime}");
@@ -570,7 +635,15 @@ namespace VideohostingPanel.ViewModels.VerifyViewModels
 
         private void UpdateTimer_Tick(object? sender, EventArgs e)
         {
-            // Дополнительные обновления если нужно
+            // Страховка: если VLC так и не подтвердил перемотку (поток не переоткрылся,
+            // видео на паузе и TimeChanged не приходит), снимаем блокировку по таймауту,
+            // иначе бегунок останется «замороженным».
+            if (_isSeeking && Environment.TickCount64 - Volatile.Read(ref _seekIssuedAt) > SeekConfirmTimeoutMs)
+            {
+                DiagLog.Write("SEEK", "SeekConfirm timeout: снимаем _isSeeking принудительно");
+                _isSeeking = false;
+                Volatile.Write(ref _seekTargetMs, -1);
+            }
         }
 
         #endregion

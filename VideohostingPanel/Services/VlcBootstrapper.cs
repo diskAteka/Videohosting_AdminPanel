@@ -52,9 +52,10 @@ namespace VideohostingPanel.Services
             {
                 "--network-caching=3000",   // Буферизация сети
                 "--no-video-title-show",
-                "--no-snapshot-preview",
-                // Быстрый отклик на перемотку: не искать ключевой кадр с начала файла.
-                "--input-fast-seek"
+                "--no-snapshot-preview"
+                // --input-fast-seek убран: он заставлял VLC прыгать на ближайший
+                // ключевой кадр ПЕРЕД целью, из-за чего видео начиналось заметно
+                // раньше точки клика. Точность важнее скорости отклика.
             };
 
             var trustDir = Path.Combine(AppContext.BaseDirectory, "Resources", "Certs");

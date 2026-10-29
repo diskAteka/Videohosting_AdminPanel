@@ -311,14 +311,14 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
 
         #region Пагинация и сортировка
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanLoadNext))]
         private async Task LoadNext()
         {
             CurrentPage++;
             await LoadRecordsCommand.ExecuteAsync(null);
         }
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanLoadPrevious))]
         private async Task LoadPrevious()
         {
             if (CurrentPage > 1)
@@ -326,6 +326,20 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                 CurrentPage--;
                 await LoadRecordsCommand.ExecuteAsync(null);
             }
+        }
+
+        private bool CanLoadNext() => !IsBusy && CurrentPage * PageSize < TotalItems;
+
+        private bool CanLoadPrevious() => !IsBusy && CurrentPage > 1;
+
+        partial void OnCurrentPageChanged(int value) => NotifyPaginationCanExecuteChanged();
+
+        partial void OnTotalItemsChanged(int value) => NotifyPaginationCanExecuteChanged();
+
+        private void NotifyPaginationCanExecuteChanged()
+        {
+            LoadNextCommand.NotifyCanExecuteChanged();
+            LoadPreviousCommand.NotifyCanExecuteChanged();
         }
 
         [RelayCommand]

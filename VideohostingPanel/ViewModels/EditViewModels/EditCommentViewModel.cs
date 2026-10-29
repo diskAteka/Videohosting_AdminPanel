@@ -85,6 +85,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         ModernMessageBox.Show($"Данные комментария обновлены\nИзмененные таблицы:\n" +
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _ = _apiService.LogAsync(AuditTable.Comment, AuditAction.Update, $"Изменён комментарий id={Comment.Id}");
                         GoBack();
                     }
                     else
@@ -111,6 +112,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         ModernMessageBox.Show($"Комментарий создан\nИзмененные таблицы:\n" +
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _ = _apiService.LogAsync(AuditTable.Comment, AuditAction.Insert, $"Создан комментарий к видео id={Comment.VideoId}");
                         GoBack();
                     }
                     else
@@ -155,6 +157,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                 if (deleteResult.Success)
                 {
                     ModernMessageBox.Show($"Комментарий удалён\nИзменено записей: {deleteResult.AffectedTables}", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _ = _apiService.LogAsync(AuditTable.Comment, AuditAction.Delete, $"Удалён комментарий id={Comment.Id}");
                     GoBack();
                 }
                 else

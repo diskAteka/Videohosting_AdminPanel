@@ -1,6 +1,7 @@
 ﻿using SharedLib.Contracts.Admin;
 using SharedLib.Contracts.Response.Video;
 using SharedLib.Contracts.RezultModels;
+using SharedLib.Models;
 using System.IO;
 using WpfApiClient.Interfaces;
 
@@ -89,6 +90,26 @@ namespace VideohostingPanel.Services
         public async Task<Stream> GetPosterAsync(int videoId)// Получение постера видео
         {
             return await _apiClient.GetPosterAsync(videoId);
+        }
+
+        // Запись действия сотрудника в журнал ServerLog. Best-effort:
+        // ошибка логирования не должна ломать уже выполненную операцию.
+        public async Task LogAsync(string affectedTable, string actionType, string text)
+        {
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                await _apiClient.LogActionAsync(new ServerLog
+                {
+                    Text = text,
+                    AffectedTable = affectedTable,
+                    ActionType = actionType
+                }, cts.Token);
+            }
+            catch (Exception ex)
+            {
+                DiagLog.Write("AUDIT", $"лог не записан: {ex.GetType().Name}: {ex.Message}");
+            }
         }
     }
 }

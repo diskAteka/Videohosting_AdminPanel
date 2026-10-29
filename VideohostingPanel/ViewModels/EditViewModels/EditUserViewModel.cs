@@ -92,6 +92,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         ModernMessageBox.Show($"Данные пользователя обновлены\nИзмененные таблицы:\n" +
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _ = _apiService.LogAsync(AuditTable.User, AuditAction.Update, $"Изменён пользователь «{User.Name}» (id={User.Id})");
                         GoBack();
                     }
                     else
@@ -127,6 +128,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         ModernMessageBox.Show($"Пользователь успешно создан\nИзмененные таблицы:\n" +
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _ = _apiService.LogAsync(AuditTable.User, AuditAction.Insert, $"Создан пользователь «{User.Name}»");
                         GoBack();
                     }
                     else
@@ -164,6 +166,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         ModernMessageBox.Show($"Пароль успешно сброшен и установлен новый\nИзмененные таблицы:\n" +
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _ = _apiService.LogAsync(AuditTable.User, AuditAction.Update, $"Сброшен пароль пользователя «{User.Name}» (id={User.Id})");
                     }
                     else
                     {
@@ -198,6 +201,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         ModernMessageBox.Show($"Пользователь успешно удален\nИзмененные таблицы:\n" +
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _ = _apiService.LogAsync(AuditTable.User, AuditAction.Delete, $"Удалён пользователь «{User.Name}» (id={User.Id})");
                         GoBack();
                     }
                     else

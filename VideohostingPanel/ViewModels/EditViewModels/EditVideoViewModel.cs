@@ -107,6 +107,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         $"Данные видео обновлены\nИзмененные таблицы:\n" +
                         $"{DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                         "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _ = _apiService.LogAsync(AuditTable.Video, AuditAction.Update, $"Изменено видео «{Video.Name}» (id={Video.Id})");
                     GoBack();
                 }
                 else
@@ -147,6 +148,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                             $"Видео успешно удалено\nИзмененные таблицы:\n" +
                             $"{DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _ = _apiService.LogAsync(AuditTable.Video, AuditAction.Delete, $"Удалено видео «{Video.Name}» (id={Video.Id})");
                         GoBack();
                     }
                     else

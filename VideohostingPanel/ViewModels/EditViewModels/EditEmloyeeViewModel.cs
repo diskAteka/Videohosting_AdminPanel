@@ -75,6 +75,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         ModernMessageBox.Show($"Данные сотрудника обновлены\nИзмененные таблицы:\n" +
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _ = _apiService.LogAsync(AuditTable.Employee, AuditAction.Update, $"Изменён сотрудник «{Employee.UserName}» (id={Employee.Id})");
                         GoBack();
                     }
                     else
@@ -93,6 +94,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         ModernMessageBox.Show($"Создан новый сотрудник\nИзмененные таблицы:\n" +
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _ = _apiService.LogAsync(AuditTable.Employee, AuditAction.Insert, $"Создан сотрудник «{Employee.UserName}»");
                         GoBack();
                     }
                     else
@@ -137,6 +139,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                     ModernMessageBox.Show($"Сотрудник удален\nИзмененные таблицы:\n" +
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    _ = _apiService.LogAsync(AuditTable.Employee, AuditAction.Delete, $"Удалён сотрудник «{Employee.UserName}» (id={Employee.Id})");
                     GoBack();
                 }
                 else

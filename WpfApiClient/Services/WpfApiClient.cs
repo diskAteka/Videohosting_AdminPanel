@@ -131,6 +131,13 @@ namespace WpfApiClient.Services
             return result;
         }
 
+        public async Task<AddRezult> LogActionAsync(ServerLog log, CancellationToken ct = default)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{_apiBaseUrl}/log", log, _jsonOptions, ct);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<AddRezult>(_jsonOptions) ?? new AddRezult(null, false);
+        }
+
         public async Task<UpdateRezult> UpdateAsync<T>(int id, T dto)
         {
             var entity = GetEntityEndpoint<T>();

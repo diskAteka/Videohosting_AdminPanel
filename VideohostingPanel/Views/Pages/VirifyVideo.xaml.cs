@@ -400,14 +400,11 @@ namespace VideohostingPanel.Views.Pages
             FormHeader.Visibility = Visibility.Collapsed;
             VideoInfoPanel.Visibility = Visibility.Collapsed;
             ExtraInfoPanel.Visibility = Visibility.Collapsed;
-            RejectCommentBorder.Visibility = Visibility.Collapsed;
-            StatusText.Visibility = Visibility.Collapsed;
             ActionButtonsPanel.Visibility = Visibility.Collapsed;
 
-            // Кнопки выхода из полного экрана + подсказка: пользователь ВСЕГДА должен иметь возможность выйти.
-            FullScreenBar.Visibility = Visibility.Visible;
-
-            // Кнопки окна модальной страницы уступают место кнопкам полного экрана.
+            // Кнопки окна модальной страницы прячем: поверх WindowsFormsHost (airspace)
+            // они всё равно не видны, а в полном экране не нужны.
+            // Выход из полного экрана — Esc или F11 (см. RegisterAppHotKeys).
             if (_hostWindow is MainWindow mainWindow)
             {
                 try
@@ -509,10 +506,7 @@ namespace VideohostingPanel.Views.Pages
             FormHeader.Visibility = Visibility.Visible;
             VideoInfoPanel.Visibility = Visibility.Visible;
             ExtraInfoPanel.Visibility = Visibility.Visible;
-            RejectCommentBorder.Visibility = Visibility.Visible;
-            StatusText.Visibility = Visibility.Visible;
             ActionButtonsPanel.Visibility = Visibility.Visible;
-            FullScreenBar.Visibility = Visibility.Collapsed;
 
             if (_hostWindow is MainWindow mainWindow)
             {
@@ -748,8 +742,8 @@ namespace VideohostingPanel.Views.Pages
             if (!_fullScreenApplied)
                 return;
 
-            // Доступная высота — это вьюпорт FormScroll: нижняя панель (FullScreenBar)
-            // занимает отдельную строку RootGrid и в эту высоту уже не входит.
+            // Доступная высота — это вьюпорт FormScroll. В полноэкранном режиме
+            // панелей под видео нет, поэтому видео занимает вьюпорт целиком.
             var available = FormScroll.ActualHeight;
             if (available <= 0)
                 available = FormScroll.ViewportHeight;
@@ -764,26 +758,6 @@ namespace VideohostingPanel.Views.Pages
             VideoContainer.Height = available;
         }
 
-        private void FullScreenMinimize_Click(object sender, RoutedEventArgs e)
-        {
-            if (_hostWindow != null)
-                _hostWindow.WindowState = WindowState.Minimized;
-        }
-
-        private void FullScreenRestore_Click(object sender, RoutedEventArgs e)
-        {
-            _viewModel.IsFullScreen = false;
-        }
-
-        private void FullScreenClose_Click(object sender, RoutedEventArgs e)
-        {
-            // Раньше здесь был Application.Shutdown() из полноэкранного режима:
-            // приложение закрывалось целиком вместо выхода из видео.
-            DiagLog.Mark("FS.Close", "кнопка закрытия в fullscreen -> выходим из fullscreen и закрываем страницу");
-            _viewModel.IsFullScreen = false;
-            _viewModel.GoBack();
-        }
-
         #endregion
 
         #region Перемотка
@@ -796,28 +770,55 @@ namespace VideohostingPanel.Views.Pages
                 return;
 
             var slider = (Slider)sender;
-            _viewModel.IsDragging = true;
 
             // Клик по самому бегунку — это начало перетаскивания, позицию не меняем.
             if (FindAncestor<Thumb>(e.OriginalSource as DependencyObject) != null)
             {
+                _viewModel.IsDragging = true;
                 _thumbDrag = true;
                 return;
             }
 
             // Одиночный клик по полосе: сразу перематываем в точку клика.
+            // Перетаскивания тут нет, поэтому IsDragging не поднимаем: иначе при
+            // потере MouseUp (слайдер больше не захватывает мышь) бегунок замрёт.
             _thumbDrag = false;
+            _viewModel.IsDragging = false;
 
-            var width = slider.ActualWidth;
-            if (width <= 0)
+            // Считаем долю по геометрии дорожки, а не по ActualWidth слайдера:
+            // дорожка уже ширины слайдера на ширину бегунка (12 px), и по краям
+            // ошибка была заметной. Центр бегунка ходит от thumb/2 до width-thumb/2.
+            var track = FindTrack(slider);
+            var trackWidth = track?.ActualWidth ?? slider.ActualWidth;
+            if (trackWidth <= 0)
                 return;
 
-            var ratio = e.GetPosition(slider).X / width;
+            var x = track != null
+                ? e.GetPosition(track).X
+                : e.GetPosition(slider).X;
+
+            var thumbWidth = track?.Thumb?.ActualWidth ?? 0;
+            var usable = trackWidth - thumbWidth;
+            var ratio = usable > 0
+                ? (x - thumbWidth / 2) / usable
+                : x / trackWidth;
+
             ratio = Math.Clamp(ratio, 0d, 1d);
+
+            // Гасим встроенную обработку клика по дорожке (LargeChange / move-to-point):
+            // иначе Slider сам двигает Value, и это спорит с нашей перемоткой.
+            e.Handled = true;
 
             // Значение слайдера не выставляем напрямую: оно привязано к
             // VideoSliderPosition, и SeekVideo обновит бегунок через биндинг.
             _viewModel.SeekVideo(ratio);
+        }
+
+        /// <summary>PART_Track из шаблона слайдера (нужен для точного расчёта доли).</summary>
+        private static Track? FindTrack(Slider slider)
+        {
+            slider.ApplyTemplate();
+            return slider.Template?.FindName("PART_Track", slider) as Track;
         }
 
         private void VideoSlider_PreviewMouseUp(object sender, MouseButtonEventArgs e)

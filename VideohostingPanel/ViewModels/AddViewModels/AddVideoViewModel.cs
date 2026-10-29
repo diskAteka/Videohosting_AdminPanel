@@ -179,6 +179,8 @@ namespace VideohostingPanel.ViewModels.AddViewModels
                         $"{DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                         "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
 
+                    _ = _apiService.LogAsync(AuditTable.Video, AuditAction.Insert, $"Создано видео «{Video.Name}»");
+
                     GoBack();
                 }
                 else

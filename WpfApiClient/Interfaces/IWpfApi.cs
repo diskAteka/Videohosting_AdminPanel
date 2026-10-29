@@ -1,6 +1,7 @@
 ﻿using SharedLib.Contracts.Admin;
 using SharedLib.Contracts.Response.Video;
 using SharedLib.Contracts.RezultModels;
+using SharedLib.Models;
 
 namespace WpfApiClient.Interfaces
 {
@@ -22,6 +23,7 @@ namespace WpfApiClient.Interfaces
 
         #region Добавление (POST)
         Task<AddRezult> AddAsync<T>(T dto);
+        Task<AddRezult> LogActionAsync(ServerLog log, CancellationToken ct = default);
         #endregion
 
         #region Обновление (PUT)
