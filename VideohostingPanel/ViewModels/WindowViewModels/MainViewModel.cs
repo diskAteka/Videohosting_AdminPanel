@@ -74,7 +74,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         [ObservableProperty]
         private bool _isAddButtonVisible = true;
 
-        // Типы логов (соответствуют CHECK-констрейнту БД, БАГ 44)
+        // Типы логов (соответствуют CHECK-констрейнту БД)
         [ObservableProperty]
         private ObservableCollection<string> _logTypes = new()
         {
@@ -130,12 +130,10 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
             _tokenHandler = tokenHandler;
             Title = "Видеохостинг - Панель управления";
 
-            // Подписка на истечение токена
             _tokenExpiredHandler = () =>
                 Application.Current.Dispatcher.BeginInvoke(() => Logout());
             _tokenHandler.OnTokenExpired += _tokenExpiredHandler;
 
-            // Настройка интерфейса в зависимости от роли сотрудника
             ApplyUserRole();
         }
 
@@ -166,7 +164,6 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                 RoleDisplay = Roles.Admin.ToString();
                 UserDisplayName = _tokenHandler.UserName ?? "Администратор";
 
-                // Инициализация таблиц (запускает загрузку данных администратора)
                 InitializeTables();
             }
         }
@@ -226,7 +223,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
             IsAddButtonVisible = table != Tables.ServerLog;
         }
 
-        // БАГ 44: при смене типа лога перезагружаем список с серверным фильтром
+        // Смена типа лога требует перезагрузки с серверным фильтром.
         partial void OnSelectedLogTypeChanged(string value)
         {
             if (IsLogTypeVisible)
@@ -236,9 +233,8 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
             }
         }
 
-        #region Фильтры текущей таблицы (БАГ 44)
+        #region Фильтры текущей таблицы
 
-        // Фильтры текущей таблицы для запросов списка и счётчика
         private string? CurrentNameFilter
         {
             get

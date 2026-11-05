@@ -39,7 +39,6 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         [ObservableProperty]
         private string _userSearchId = string.Empty;
 
-        // БАГ 46: дата/время комментария — теперь подключено к странице и сохраняется
         [ObservableProperty]
         private DateTime? _selectedUploadDate;
 
@@ -75,7 +74,6 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                 Comment.VideoId = SelectedVideo.Id;
                 Comment.UserId = SelectedUser.Id;
 
-                // БАГ 46: дата и время комментария редактируются администратором
                 if (SelectedUploadDate == null)
                 {
                     ModernMessageBox.Show("Укажите дату комментария", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -302,7 +300,6 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                     Text = comment.Text,
                     Date = comment.Date
                 };
-                // БАГ 46: инициализация даты/времени из существующего комментария
                 _selectedUploadDate = comment.Date;
                 _uploadTime = comment.Date.ToString("HH:mm");
                 Title = $"Редактирование комментария";
@@ -359,9 +356,9 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                     });
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки видео: {ex.Message}");
+                // Список видео не критичен для редактирования комментария.
             }
         }
 
@@ -380,9 +377,9 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                     });
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки пользователей: {ex.Message}");
+                // Список пользователей не критичен для редактирования комментария.
             }
         }
 

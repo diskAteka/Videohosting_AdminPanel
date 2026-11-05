@@ -39,6 +39,9 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         [RelayCommand]
         private async Task SaveChanges()
         {
+            if (User == null)
+                return;
+
             try
             {
                 IsBusy = true;
@@ -62,7 +65,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                     ModernMessageBox.Show("Некорректный формат Email", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                // БАГ 46: nullable-дата и строгий формат ЧЧ:ММ вместо TimeSpan.TryParse
+                // Nullable-дата и строгий формат ЧЧ:ММ вместо TimeSpan.TryParse
                 if (RegisterDateSelected == null)
                 {
                     ModernMessageBox.Show("Укажите дату регистрации", "Предупреждение",
@@ -144,6 +147,9 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         [RelayCommand]
         private async Task ResetPassword()
         {
+            if (User == null)
+                return;
+
             try
             {
                 IsBusy = true;
@@ -180,6 +186,9 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         [RelayCommand]
         private async Task DeleteUser()
         {
+            if (User == null)
+                return;
+
             try
             {
                 IsBusy = true;

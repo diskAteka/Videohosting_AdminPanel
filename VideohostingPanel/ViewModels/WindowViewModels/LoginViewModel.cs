@@ -54,16 +54,9 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                 IsBusy = true;
                 IsErrorVisible = false;
 
-                DebugLog.Write("--- Login command ---");
-                DebugLog.Write($"ServerAddress='{ServerAddress}', Port='{Port}'");
-                DebugLog.Write($"UserName='{UserName}', Password.Length={Password?.Length ?? -1}");
-
-                // Применяем адрес и порт ко всем API-запросам
                 _apiService.SetBaseUrl(ServerAddress, Port);
                 var baseUrl = AppConfig.BuildBaseUrl(ServerAddress, Port);
-                DebugLog.Write($"baseUrl='{baseUrl}'");
 
-                // Получаем токен через сервис аутентификации
                 var loginResponse = await _authService.LoginAsync(baseUrl, UserName, Password);
 
                 if (string.IsNullOrEmpty(loginResponse.Token))
@@ -72,24 +65,19 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                     return;
                 }
 
-                // Сохраняем токен в обработчик
                 _tokenHandler.SetToken(loginResponse.Token);
 
-                // Открываем главное окно
                 var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
                 mainWindow.Show();
 
-                // Закрываем окно входа
                 CloseWindow();
             }
             catch (LoginException ex)
             {
-                DebugLog.Write($"LoginException {ex.StatusCode}: {ex.Message}");
                 ShowError(ex.Message);
             }
             catch (Exception ex)
             {
-                DebugLog.Write($"Unhandled exception: {ex}");
                 ShowError($"Ошибка входа: {ex.Message}");
             }
             finally

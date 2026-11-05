@@ -19,7 +19,7 @@
             BorderThickness="1"
             Cursor="Hand" MouseLeftButtonUp="Border_Click">
 
-        <!-- БАГ 43: вместо анимации масштаба — красная обводка при наведении -->
+        <!-- Вместо анимации масштаба — красная обводка при наведении -->
         <Border.Style>
             <Style TargetType="Border">
                 <Setter Property="BorderBrush" Value="{StaticResource PrimaryPurpleBrush}"/>

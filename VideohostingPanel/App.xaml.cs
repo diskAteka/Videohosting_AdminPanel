@@ -61,21 +61,13 @@ namespace VideohostingPanel
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            // ДИАГНОСТИКА ЗАВИСАНИЙ: сторож UI-потока + логи. Включается первой,
-            // чтобы поймать проблемы ещё на старте. Удалить вместе с DiagLog.cs.
-            DiagLog.Start("App.OnStartup");
-            DiagLog.Mark("App.OnStartup", "showing LoginWindow");
-
             var loginWindow = ServiceProvider.GetRequiredService<LoginWindow>();
             loginWindow.Show();
-
-            DiagLog.Mark("App.OnStartup", "LoginWindow shown");
 
             // Прогрев libvlc в фоне: первый libvlc_new занимает секунды (скан плагинов).
             // Пока пользователь логинится, DLL и кэш плагинов уже загружены,
             // поэтому открытие страницы проверки видео не блокирует UI.
             VlcBootstrapper.WarmUpInBackground();
-            DiagLog.Mark("App.OnStartup", "libvlc warm-up запущен");
 
             base.OnStartup(e);
         }
@@ -85,14 +77,12 @@ namespace VideohostingPanel
             // libvlc держит фоновые потоки: без явного release процесс может
             // висеть после закрытия окна.
             VlcBootstrapper.Shutdown();
-            DiagLog.Mark("App.OnExit", "VlcBootstrapper.Shutdown вызван");
 
             base.OnExit(e);
         }
 
         private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
-            DiagLog.Write("EXC", "App.DispatcherUnhandledException: " + e.Exception);
             LogAndReport(e.Exception);
             e.Handled = true;
         }
@@ -120,9 +110,8 @@ namespace VideohostingPanel
             }
             catch
             {
+                // Записать crash.log не удалось — сообщить об этом некуда.
             }
-
-            DebugLog.Write($"Unhandled: {exception}");
         }
     }
 }

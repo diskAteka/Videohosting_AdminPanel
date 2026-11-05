@@ -37,7 +37,6 @@ namespace VideohostingPanel.Services
 
             if (e.NewValue is string newPassword && passwordBox.Password != newPassword)
             {
-                DebugLog.Write($"PasswordBox: источник -> PasswordBox (len={newPassword.Length})");
                 passwordBox.Password = newPassword;
             }
 
@@ -52,7 +51,6 @@ namespace VideohostingPanel.Services
             var binding = BindingOperations.GetBindingExpression(passwordBox, BindPasswordProperty);
             if (binding == null)
             {
-                DebugLog.Write("PasswordBox: PasswordChanged, но привязка BindPassword отсутствует");
                 return;
             }
 
@@ -61,8 +59,6 @@ namespace VideohostingPanel.Services
             passwordBox.SetValue(IsUpdatingProperty, false);
 
             binding.UpdateSource();
-
-            DebugLog.Write($"PasswordBox: PasswordBox -> источник (len={passwordBox.Password.Length})");
         }
     }
 }

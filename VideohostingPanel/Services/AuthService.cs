@@ -24,13 +24,6 @@ namespace VideohostingPanel.Services
 
         public async Task<TokenResponse> LoginAsync(string baseUrl, string username, string password)
         {
-            DebugLog.Write("========== LOGIN START ==========");
-            DebugLog.Write($"baseUrl='{baseUrl}'");
-            DebugLog.Write($"username='{username}' (len={username?.Length ?? -1})");
-            DebugLog.Write(password == null
-                ? "password=<null>"
-                : $"password len={password.Length}{(password.Length == 0 ? " <-- ПУСТОЙ!" : string.Empty)}");
-
             using var httpClient = new HttpClient
             {
                 BaseAddress = new Uri(baseUrl),
@@ -43,32 +36,26 @@ namespace VideohostingPanel.Services
                 Password = password
             };
 
-            DebugLog.Write($"POST {AUTH_PATH} body={{ Username='{username}', Password={(string.IsNullOrEmpty(password) ? "<EMPTY>" : $"<{password.Length} chars>")} }}");
-
             HttpResponseMessage response;
             try
             {
                 response = await httpClient.PostAsJsonAsync(AUTH_PATH, request, _jsonOptions);
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException)
             {
-                DebugLog.Write($"HttpRequestException: {ex}");
                 throw new LoginException(HttpStatusCode.ServiceUnavailable,
                     "Не удалось подключиться к серверу. Проверьте адрес и порт.");
             }
-            catch (TaskCanceledException ex)
+            catch (TaskCanceledException)
             {
-                DebugLog.Write($"TaskCanceledException (timeout): {ex}");
                 throw new LoginException(HttpStatusCode.RequestTimeout,
                     "Сервер не ответил. Превышено время ожидания.");
             }
 
             var body = await response.Content.ReadAsStringAsync();
-            DebugLog.Write($"response {(int)response.StatusCode} {response.StatusCode}");
 
             if (!response.IsSuccessStatusCode)
             {
-                DebugLog.Write($"response body: {body}");
                 throw new LoginException(response.StatusCode, ExtractMessage(body));
             }
 
@@ -76,11 +63,9 @@ namespace VideohostingPanel.Services
 
             if (loginResponse == null)
             {
-                DebugLog.Write("Не удалось десериализовать TokenResponse");
                 throw new LoginException(response.StatusCode, "Не удалось получить ответ от сервера");
             }
 
-            DebugLog.Write($"LOGIN OK, token len={loginResponse.Token?.Length ?? 0}");
             return loginResponse;
         }
 

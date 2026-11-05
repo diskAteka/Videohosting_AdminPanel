@@ -144,7 +144,7 @@ namespace VideohostingPanel.ViewModels.AddViewModels
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                // БАГ 46: nullable-дата и строгий формат ЧЧ:ММ вместо TimeSpan.TryParse
+                // Nullable-дата и строгий формат ЧЧ:ММ вместо TimeSpan.TryParse
                 if (SelectedUploadDate == null)
                 {
                     ModernMessageBox.Show("Укажите дату загрузки", "Предупреждение",

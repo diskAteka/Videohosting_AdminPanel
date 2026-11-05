@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -16,9 +15,9 @@ namespace VideohostingPanel.Views.Pages
 {
     public partial class VerifyVideo : Page
     {
-        private VlcControl _vlcPlayer;
+        private VlcControl? _vlcPlayer;
         private VerifyVideoViewModel _viewModel;
-        private Window _hostWindow;
+        private Window? _hostWindow;
 
         public VerifyVideo(VerifyVideoViewModel viewModel)
         {
@@ -32,7 +31,6 @@ namespace VideohostingPanel.Views.Pages
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            DiagLog.Mark("View.OnLoaded", $"isFullScreen={_viewModel.IsFullScreen}");
             _hostWindow = Window.GetWindow(this);
             if (_hostWindow != null)
             {
@@ -47,41 +45,21 @@ namespace VideohostingPanel.Views.Pages
 
             if (_vlcPlayer != null)
             {
-                DiagLog.Mark("View.OnLoaded", "VlcControl уже создан — повторная инициализация не нужна");
                 return;
             }
 
             // Инициализация VLC только после того, как у хоста есть HWND и реальные размеры.
-            // async void допустим: все исключения ловятся внутри InitializeVlcPlayerAsync.
             VideoHost.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(async () =>
             {
-                var op = DiagLog.Begin("View.InitVlcDeferred");
-                try
-                {
-                    DiagLog.Mark("View.OnLoaded", "deferred: before InitializeVlcPlayer");
-                    await InitializeVlcPlayerAsync();
-                    DiagLog.Mark("View.OnLoaded", "deferred: before LoadVideoCommand");
+                await InitializeVlcPlayerAsync();
 
-                    if (_vlcPlayer != null)
-                        _viewModel.LoadVideoCommand.Execute(null);
-
-                    DiagLog.Mark("View.OnLoaded", "deferred: LoadVideoCommand dispatched");
-                }
-                catch (Exception ex)
-                {
-                    DiagLog.Write("EXC", "View.InitVlcDeferred: " + ex);
-                }
-                finally
-                {
-                    DiagLog.End(op);
-                }
+                if (_vlcPlayer != null)
+                    _viewModel.LoadVideoCommand.Execute(null);
             }));
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
-            DiagLog.Mark("View.OnUnloaded", $"isFullScreen={_viewModel.IsFullScreen} vlc{( _vlcPlayer != null ? "!=null" : "==null")}");
-
             if (_viewModel.IsFullScreen)
                 _viewModel.IsFullScreen = false;
 
@@ -94,8 +72,8 @@ namespace VideohostingPanel.Views.Pages
 
             _viewModel.OnGoBackRequested -= OnGoBackRequested;
 
-            // ДИАГНОСТИКА: раньше страница выгружалась без освобождения VLC —
-            // каждый VlcControl оставался жив (утечка инстансов libvlc, потоков и HWND).
+            // Освобождаем VLC: иначе каждый VlcControl оставляет живой инстанс
+            // libvlc, его потоки и HWND.
             Cleanup();
         }
 
@@ -108,54 +86,41 @@ namespace VideohostingPanel.Views.Pages
         /// <summary>
         /// Создаёт VlcControl и завершает его инициализацию (EndInit → libvlc_new).
         ///
-        /// ГЛАВНОЕ: EndInit синхронно создаёт libvlc-инстанс. Первый вызов в процессе
-        /// занимает СЕКУНДЫ (загрузка libvlc.dll + скан plugins, замер: 9.4 с холодный / 0.15 с тёплый).
-        /// Поэтому перед EndInit обязательно ждём фоновый прогрев (VlcBootstrapper),
-        /// иначе UI-поток блокируется и приложение выглядит зависшим.
+        /// EndInit синхронно создаёт libvlc-инстанс: первый вызов в процессе занимает
+        /// секунды (загрузка libvlc.dll и сканирование plugins). Поэтому перед EndInit
+        /// ждём фоновый прогрев (VlcBootstrapper), иначе UI-поток блокируется.
         /// </summary>
         private async Task InitializeVlcPlayerAsync()
         {
-            var op = DiagLog.Begin("View.InitializeVlcPlayer");
             try
             {
-                DiagLog.Mark("View.InitializeVlcPlayer", "before new VlcControl");
                 var player = new VlcControl();
-                VlcControlTracker.OnCreated();
 
-                DiagLog.Mark("View.InitializeVlcPlayer", "before BeginInit");
                 player.BeginInit();
                 player.Dock = DockStyle.Fill;
 
-                // Настройки (VlcLibDirectory / VlcMediaplayerOptions) должны быть заданы
-                // ДО EndInit — иначе Vlc.DotNet бросает InvalidOperationException.
+                // VlcLibDirectory и VlcMediaplayerOptions должны быть заданы
+                // до EndInit, иначе Vlc.DotNet бросает InvalidOperationException.
                 _viewModel.InitializeVlcPlayer(player);
 
                 VideoHost.Child = player;
                 _vlcPlayer = player;
 
-                // Ждём прогрев libvlc, чтобы EndInit не блокировал UI на секунды.
-                var warm = await WaitForWarmUpAsync();
-                DiagLog.Mark("View.InitializeVlcPlayer",
-                    $"warmup ok={warm.Ok} elapsed={warm.ElapsedMs}ms error={warm.Error}");
+                var warmOk = await WaitForWarmUpAsync();
 
                 // Пока ждали прогрев, пользователь мог уйти со страницы.
                 if (!IsLoaded || _vlcPlayer != player)
                 {
-                    DiagLog.Mark("View.InitializeVlcPlayer", "страница уже выгружена — отменяем инициализацию");
                     SafeDisposeUninitialized(player);
                     return;
                 }
 
-                if (!warm.Ok)
+                if (!warmOk)
                     ShowSlowInitHint();
 
-                DiagLog.Mark("View.InitializeVlcPlayer", "before EndInit (создание libvlc-инстанса)");
-                var sw = Stopwatch.StartNew();
                 player.EndInit();
-                sw.Stop();
-                DiagLog.Mark("View.InitializeVlcPlayer", $"after EndInit за {sw.ElapsedMilliseconds} мс");
 
-                if (!warm.Ok)
+                if (!warmOk)
                     HideSlowInitHint();
 
                 // VLC по умолчанию перехватывает клавиатуру: отключаем, чтобы F11/Space/Esc
@@ -164,49 +129,34 @@ namespace VideohostingPanel.Views.Pages
                 {
                     player.Video.IsKeyInputEnabled = false;
                     player.Video.IsMouseInputEnabled = false;
-                    DiagLog.Mark("View.InitializeVlcPlayer", "input disabled on video");
                 }
-                catch (Exception ex)
+                catch
                 {
                     // Старые версии libvlc могут не поддерживать эти опции.
-                    DiagLog.Write("VLC", "IsKeyInputEnabled/IsMouseInputEnabled не применились: " + ex.GetType().Name);
                 }
 
                 player.MouseClick += OnVlcMouseClick;
                 player.KeyDown += OnVlcKeyDown;
-
-                DiagLog.Mark("View.InitializeVlcPlayer", "done");
             }
             catch (Exception ex)
             {
-                DiagLog.Write("EXC", "View.InitializeVlcPlayer: " + ex);
                 HideSlowInitHint();
                 ShowVlcInitError(ex);
-            }
-            finally
-            {
-                DiagLog.End(op);
             }
         }
 
         /// <summary>
         /// Ждёт прогрев libvlc, но не дольше таймаута. Возвращает false, если прогрев
-        /// не удался/не успел: тогда EndInit сам создаст инстанс (медленно, но с
-        /// индикатором загрузки, а не с «зависшим» окном).
+        /// не удался или не успел.
         /// </summary>
-        private static async Task<VlcBootstrapper.WarmUpResult> WaitForWarmUpAsync()
+        private static async Task<bool> WaitForWarmUpAsync()
         {
             var warmTask = VlcBootstrapper.WarmUpAsync();
-            // 15 с хватает с запасом (холодный libvlc_new на этой машине ~0.7 с).
-            // Больше ждать нет смысла: страница уже открыта, просто без картинки.
             var timeout = TimeSpan.FromSeconds(15);
 
             var finished = await Task.WhenAny(warmTask, Task.Delay(timeout)).ConfigureAwait(true);
             if (finished != warmTask)
-            {
-                DiagLog.Write("VLC", $"прогрев не завершился за {timeout.TotalSeconds:0} с — продолжаем без него");
-                return new VlcBootstrapper.WarmUpResult(false, -1, "timeout");
-            }
+                return false;
 
             return await warmTask.ConfigureAwait(true);
         }
@@ -249,11 +199,10 @@ namespace VideohostingPanel.Views.Pages
             try
             {
                 player.Dispose();
-                VlcControlTracker.OnDisposed();
             }
-            catch (Exception ex)
+            catch
             {
-                DiagLog.Write("VLC", "SafeDisposeUninitialized: " + ex.GetType().Name);
+                // Плеер уже мог быть освобождён.
             }
         }
 
@@ -273,10 +222,8 @@ namespace VideohostingPanel.Views.Pages
 
         private void OnVlcMouseClick(object? sender, System.Windows.Forms.MouseEventArgs e)
         {
-            // ДИАГНОСТИКА: раньше здесь вызывался _vlcPlayer.Focus() — фокус уходил
-            // в WinForms-контрол, и WPF PreviewKeyDown (Esc/F11) переставал получать клавиши.
-            // Теперь фокус остаётся в WPF.
-            DiagLog.Mark("View.VlcMouseClick", $"button={e.Button} focusedElement={Keyboard.FocusedElement?.GetType().Name}");
+            // Фокус держим в WPF: если отдать его WinForms-контролу VLC,
+            // PreviewKeyDown окна перестаёт получать Esc/F11.
             FocusWpfHost();
 
             if (e.Button == MouseButtons.Left)
@@ -294,16 +241,15 @@ namespace VideohostingPanel.Views.Pages
                 Focus();
                 Keyboard.Focus(this);
             }
-            catch (Exception ex)
+            catch
             {
-                DiagLog.Write("DIAG", "FocusWpfHost: " + ex.GetType().Name);
+                // Окно могло быть уже закрыто.
             }
         }
 
         private void OnVlcKeyDown(object? sender, System.Windows.Forms.KeyEventArgs e)
         {
-            // ДИАГНОСТИКА: путь WinForms (клавиша пришла в VLC-контрол, а не в WPF).
-            DiagLog.Mark("Key.WinForms", $"key={e.KeyCode} fullscreen={_viewModel.IsFullScreen}");
+            // Клавиша пришла прямо в WinForms-контрол VLC.
             switch (e.KeyCode)
             {
                 case System.Windows.Forms.Keys.F11:
@@ -326,8 +272,7 @@ namespace VideohostingPanel.Views.Pages
 
         private void OnWindowPreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            // ДИАГНОСТИКА: путь WPF (клавиша пришла в окно).
-            DiagLog.Mark("Key.WPF", $"key={e.Key} fullscreen={_viewModel.IsFullScreen}");
+            // Клавиша пришла в окно WPF.
             if (e.Key == Key.F11)
             {
                 _viewModel.ToggleFullScreenCommand.Execute(null);
@@ -381,9 +326,7 @@ namespace VideohostingPanel.Views.Pages
         private void EnterFullScreen()
         {
             _fullScreenApplied = true;
-            DiagLog.Mark("FS.Enter", "start " + DiagLog.DescribeState());
 
-            // Запоминаем исходное оформление
             _prevContentGridMargin = ContentGrid.Margin;
             _prevFormStackMargin = FormStack.Margin;
             _prevVideoMargin = VideoContainer.Margin;
@@ -395,7 +338,6 @@ namespace VideohostingPanel.Views.Pages
             _prevFormBorderThickness = FormBorder.BorderThickness;
             _prevVideoBorderThickness = VideoContainer.BorderThickness;
 
-            // Прячем всё, кроме видео
             BackButtonPanel.Visibility = Visibility.Collapsed;
             FormHeader.Visibility = Visibility.Collapsed;
             VideoInfoPanel.Visibility = Visibility.Collapsed;
@@ -411,9 +353,9 @@ namespace VideohostingPanel.Views.Pages
                 {
                     mainWindow.SetModalWindowControlsVisible(false);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    DiagLog.Write("FS", "SetModalWindowControlsVisible(false): " + ex.GetType().Name);
+                    // Главное окно могло быть уже закрыто.
                 }
             }
 
@@ -452,14 +394,10 @@ namespace VideohostingPanel.Views.Pages
                 _prevTopmost = _hostWindow.Topmost;
                 _prevBounds = new Rect(_hostWindow.Left, _hostWindow.Top, _hostWindow.Width, _hostWindow.Height);
 
-                // Разворачиваем на рабочий стол (БЕЗ Topmost и БЕЗ перекрытия панели задач):
-                // раньше Topmost=true поверх всех окон был второй причиной «приложение не закрыть»,
-                // потому что поверх висело видео, а кнопки окна были спрятаны.
+                // Разворачиваем на рабочий стол, не перекрывая панель задач.
+                // Topmost не включаем: иначе окно с уже скрытыми кнопками
+                // становится трудно закрыть.
                 var handle = new WindowInteropHelper(_hostWindow).Handle;
-                if (handle == IntPtr.Zero)
-                {
-                    DiagLog.Write("FS", "EnterFullScreen: HWND ещё не создан — используем основной экран");
-                }
 
                 var screen = handle == IntPtr.Zero
                     ? System.Windows.Forms.Screen.PrimaryScreen
@@ -476,8 +414,6 @@ namespace VideohostingPanel.Views.Pages
                 _hostWindow.Top = work.Top / dpi.DpiScaleY;
                 _hostWindow.Width = work.Width / dpi.DpiScaleX;
                 _hostWindow.Height = work.Height / dpi.DpiScaleY;
-
-                DiagLog.Mark("FS.Enter", "после установки границ");
             }
 
             // Горячие клавиши уровня окна: даже если фокус ушёл в VLC (WinForms HWND),
@@ -490,14 +426,11 @@ namespace VideohostingPanel.Views.Pages
             // Пересчёт после того, как окно реально получило новые размеры:
             // SizeChanged при программной установке Width/Height может прийти раньше подписки.
             Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(ResizeVideoToWindow));
-
-            DiagLog.Mark("FS.Enter", "done " + DiagLog.DescribeState());
         }
 
         private void ExitFullScreen()
         {
             _fullScreenApplied = false;
-            DiagLog.Mark("FS.Exit", "start " + DiagLog.DescribeState());
 
             StopFullScreenGuard();
             RegisterAppHotKeys(false);
@@ -514,9 +447,9 @@ namespace VideohostingPanel.Views.Pages
                 {
                     mainWindow.SetModalWindowControlsVisible(true);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    DiagLog.Write("FS", "SetModalWindowControlsVisible(true): " + ex.GetType().Name);
+                    // Главное окно могло быть уже закрыто.
                 }
             }
 
@@ -549,7 +482,6 @@ namespace VideohostingPanel.Views.Pages
                 _hostWindow.WindowState = _prevWindowState;
             }
 
-            DiagLog.Mark("FS.Exit", "done " + DiagLog.DescribeState());
         }
 
         #region Горячие клавиши и страховка полного экрана
@@ -582,7 +514,6 @@ namespace VideohostingPanel.Views.Pages
                     var handle = new WindowInteropHelper(_hostWindow).Handle;
                     if (handle == IntPtr.Zero)
                     {
-                        DiagLog.Write("FS", "RegisterHotKey: HWND == 0 — пропускаем");
                         return;
                     }
 
@@ -596,7 +527,6 @@ namespace VideohostingPanel.Views.Pages
                     var f11 = RegisterHotKey(handle, HotKeyF11, 0, VK_F11);
                     _hotKeysRegistered = esc || f11;
 
-                    DiagLog.Write("FS", $"RegisterHotKey esc={esc} f11={f11}");
                     return;
                 }
 
@@ -609,11 +539,10 @@ namespace VideohostingPanel.Views.Pages
                 _hotKeySource?.RemoveHook(HotKeyHook);
                 _hotKeySource = null;
                 _hotKeysRegistered = false;
-                DiagLog.Write("FS", "UnregisterHotKey done");
             }
-            catch (Exception ex)
+            catch
             {
-                DiagLog.Write("FS", "RegisterAppHotKeys: " + ex);
+                // Регистрация горячих клавиш не критична для работы страницы.
             }
         }
 
@@ -624,7 +553,6 @@ namespace VideohostingPanel.Views.Pages
                 return IntPtr.Zero;
 
             var id = wParam.ToInt32();
-            DiagLog.Mark("FS.HotKey", $"id=0x{id:X}");
 
             if (id == HotKeyEscape)
             {
@@ -644,9 +572,8 @@ namespace VideohostingPanel.Views.Pages
         }
 
         /// <summary>
-        /// Пока страница в полноэкранном режиме, раз в 500 мс возвращаем окну нормальные
-        /// границы, если Topmost включён или окно ушло за пределы рабочего стола.
-        /// Это последняя страховка от «приложение висит поверх всего и его не закрыть».
+        /// Пока страница в полноэкранном режиме, следит, чтобы окно не осталось поверх
+        /// всех остальных с недоступными кнопками управления.
         /// </summary>
         private void StartFullScreenGuard()
         {
@@ -676,16 +603,15 @@ namespace VideohostingPanel.Views.Pages
             {
                 if (_hostWindow.Topmost && !_exitingFullScreenInternally)
                 {
-                    DiagLog.Write("FS", "GUARD: Topmost неожиданно true — сбрасываем");
                     _hostWindow.Topmost = false;
                 }
 
                 if (!_viewModel.IsFullScreen)
                     StopFullScreenGuard();
             }
-            catch (Exception ex)
+            catch
             {
-                DiagLog.Write("FS", "GUARD error: " + ex.GetType().Name);
+                // Окно могло быть уже закрыто.
             }
         }
 
@@ -697,7 +623,6 @@ namespace VideohostingPanel.Views.Pages
         /// </summary>
         public void ForceExitFullScreen()
         {
-            DiagLog.Mark("FS.ForceExit", "вызван аварийный сброс");
             _exitingFullScreenInternally = true;
             try
             {
@@ -718,9 +643,9 @@ namespace VideohostingPanel.Views.Pages
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                DiagLog.Write("FS", "ForceExitFullScreen: " + ex);
+                // Аварийный путь не должен выбрасывать исключения.
             }
             finally
             {
@@ -733,7 +658,6 @@ namespace VideohostingPanel.Views.Pages
             if (!_fullScreenApplied)
                 return;
 
-            DiagLog.Mark("FS.SizeChanged", $"root={RootGrid.ActualHeight:0} viewport={FormScroll.ActualHeight:0} video={VideoContainer.Height:0}");
             ResizeVideoToWindow();
         }
 
@@ -754,7 +678,6 @@ namespace VideohostingPanel.Views.Pages
             if (Math.Abs(VideoContainer.Height - available) < 0.5)
                 return;
 
-            DiagLog.Mark("FS.Resize", $"viewport={available:0} root={RootGrid.ActualHeight:0} video={VideoContainer.Height:0}");
             VideoContainer.Height = available;
         }
 
@@ -872,40 +795,26 @@ namespace VideohostingPanel.Views.Pages
 
         public void Cleanup()
         {
-            var op = DiagLog.Begin("View.Cleanup", $"vlc={(_vlcPlayer != null)}");
-            try
+            ForceExitFullScreen();
+
+            _viewModel?.Cleanup();
+
+            if (_vlcPlayer != null)
             {
-                DiagLog.Mark("View.Cleanup", "before ForceExitFullScreen");
-                ForceExitFullScreen();
-                DiagLog.Mark("View.Cleanup", "before ViewModel.Cleanup");
-
-                _viewModel?.Cleanup();
-
-                if (_vlcPlayer != null)
+                if (_vlcPlayer.IsDisposed == false)
                 {
-                    if (_vlcPlayer.IsDisposed == false)
+                    try
                     {
-                        try
-                        {
-                            DiagLog.Mark("View.Cleanup", "before unsubscribe VlcControl events");
-                            _vlcPlayer.MouseClick -= OnVlcMouseClick;
-                            _vlcPlayer.KeyDown -= OnVlcKeyDown;
-                            VlcControlTracker.OnDisposed();
-                        }
-                        catch (Exception ex)
-                        {
-                            DiagLog.Write("VLC", "View.Cleanup unsubscribe: " + ex.GetType().Name);
-                        }
+                        _vlcPlayer.MouseClick -= OnVlcMouseClick;
+                        _vlcPlayer.KeyDown -= OnVlcKeyDown;
                     }
-
-                    _vlcPlayer = null;
+                    catch
+                    {
+                        // Плеер уже освобождён.
+                    }
                 }
 
-                DiagLog.Mark("View.Cleanup", "done");
-            }
-            finally
-            {
-                DiagLog.End(op);
+                _vlcPlayer = null;
             }
         }
 

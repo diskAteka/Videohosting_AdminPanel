@@ -3,8 +3,8 @@ using System.Text.RegularExpressions;
 namespace VideohostingPanel.Services
 {
     /// <summary>
-    /// БАГ 46: строгая проверка времени в формате ЧЧ:ММ.
-    /// TimeSpan.TryParse пропускался: "12" (= 12 суток), "1:2:3" (с секундами) и др.
+    /// Строгая проверка времени в формате ЧЧ:ММ.
+    /// TimeSpan.TryParse не подходит: принимает "12" (= 12 суток), "1:2:3" и т.п.
     /// </summary>
     public static partial class TimeFormatHelper
     {

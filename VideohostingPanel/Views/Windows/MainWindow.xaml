@@ -118,7 +118,7 @@
                                   Foreground="{StaticResource TextSecondaryBrush}"
                                   VerticalAlignment="Center"/>
 
-                        <!-- БАГ 48: кнопка выхода — слева от всех кнопок окна, красная, текст «выйти», без иконки -->
+                        <!-- Кнопка выхода — слева от всех кнопок окна, красная, текст «выйти», без иконки -->
                         <Button Command="{Binding LogoutCommand}"
                                 Content="выйти"
                                 Style="{StaticResource LogoutButtonStyle}"
@@ -381,7 +381,7 @@
                Visibility="Collapsed"/>
 
         <!-- Кнопки управления окном для модальных страниц (редактирование, верификация) -->
-        <!-- БАГ 48: единые стили с кнопками главного окна -->
+        <!-- Единые стили с кнопками главного окна -->
         <StackPanel x:Name="ModalWindowButtons"
                     Panel.ZIndex="2"
                     Orientation="Horizontal"

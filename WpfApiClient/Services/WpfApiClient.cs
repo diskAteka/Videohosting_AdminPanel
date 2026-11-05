@@ -81,7 +81,7 @@ namespace WpfApiClient.Services
                 queryParams.Add($"SortBy={Uri.EscapeDataString(sortBy)}");
             queryParams.Add($"SortAscending={sortAscending.ToString().ToLower()}");
 
-            // БАГ 44: фильтры поиска по имени / тексту / типу действия (пустые отключают фильтр)
+            // Фильтры поиска по имени / тексту / типу действия; пустые отключают фильтр
             if (!string.IsNullOrWhiteSpace(searchName))
                 queryParams.Add($"SearchName={Uri.EscapeDataString(searchName)}");
             if (!string.IsNullOrWhiteSpace(searchText))
@@ -200,7 +200,7 @@ namespace WpfApiClient.Services
                 $"type={Uri.EscapeDataString(type)}"
             };
 
-            // БАГ 44: счётчик должен считать по тем же фильтрам, что и список
+            // Счётчик должен считать по тем же фильтрам, что и список
             if (!string.IsNullOrWhiteSpace(searchName))
                 queryParams.Add($"SearchName={Uri.EscapeDataString(searchName)}");
             if (!string.IsNullOrWhiteSpace(searchText))

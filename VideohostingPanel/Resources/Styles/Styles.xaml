@@ -548,7 +548,7 @@
         </Style.Triggers>
     </Style>
 
-    <!-- БАГ 48: единый стиль кнопок управления окном (используется на главной и в модальном оверлее) -->
+    <!-- Единый стиль кнопок управления окном (главная и модальный оверлей) -->
     <!-- Кнопка «свернуть» -->
     <Style x:Key="MinimizeCaptionButtonStyle" TargetType="Button">
         <Setter Property="Width" Value="35"/>
@@ -1110,7 +1110,7 @@
                                 </Button.Template>
                             </Button>
 
-                            <!-- БАГ 46: выпадающий календарь. Имена PART_Popup/PART_Calendar
+                            <!-- Выпадающий календарь. Имена PART_Popup/PART_Calendar
                                  обязательны — без них DatePicker не открывает Popup. -->
                             <Popup x:Name="PART_Popup"
                                    AllowsTransparency="True"

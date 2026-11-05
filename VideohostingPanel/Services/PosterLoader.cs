@@ -26,9 +26,9 @@ namespace VideohostingPanel.Services
 
                 return bitmap;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                DebugLog.Write($"Не удалось загрузить постер видео {videoId}: {ex.Message}");
+                // Постер не критичен для воспроизведения.
                 return null;
             }
         }

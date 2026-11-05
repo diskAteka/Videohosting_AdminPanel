@@ -70,7 +70,7 @@ namespace VideohostingPanel.Views.Windows
         }
 
         /// <summary>
-        /// Обработчик изменения пароля (БАГ 47: текст всегда виден)
+        /// Обработчик изменения пароля (текст всегда виден)
         /// </summary>
         private void PasswordInput_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -97,11 +97,7 @@ namespace VideohostingPanel.Views.Windows
                 return;
             }
 
-            // Сохраняем новый пароль
             NewPassword = _userPassword;
-
-            // Здесь должна быть логика сброса пароля
-            // Например: UserService.ResetPassword(UserId, NewPassword);
 
             ModernMessageBox.Show($"Пароль для пользователя {UserName} успешно изменен!",
                             "Успех",
