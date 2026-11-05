@@ -39,6 +39,13 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         [ObservableProperty]
         private string _userSearchId = string.Empty;
 
+        // БАГ 46: дата/время комментария — теперь подключено к странице и сохраняется
+        [ObservableProperty]
+        private DateTime? _selectedUploadDate;
+
+        [ObservableProperty]
+        private string _uploadTime = DateTime.Now.ToString("HH:mm");
+
         #endregion
 
         #region Команды
@@ -68,6 +75,20 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                 Comment.VideoId = SelectedVideo.Id;
                 Comment.UserId = SelectedUser.Id;
 
+                // БАГ 46: дата и время комментария редактируются администратором
+                if (SelectedUploadDate == null)
+                {
+                    ModernMessageBox.Show("Укажите дату комментария", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                if (!TimeFormatHelper.TryParseHHmm(UploadTime, out TimeSpan time))
+                {
+                    ModernMessageBox.Show("Неверный формат времени. Используйте ЧЧ:ММ (например: 14:30)",
+                        "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+                var commentDate = SelectedUploadDate.Value.Date + time;
+
                 if (IsEditMode)//Если включен режим редактирования
                 {
                     var postDto = new PostPutCommentRequest
@@ -75,7 +96,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         VideoId = Comment.VideoId,
                         UserId = Comment.UserId,
                         Text = Comment.Text,
-                        Date = Comment.Date
+                        Date = commentDate
                     };//Сформировать запрос на обновление
 
                     var response = await _apiService.UpdateAsync(Comment.Id, postDto);//Отправить запрос
@@ -102,7 +123,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         VideoId = Comment.VideoId,
                         UserId = Comment.UserId,
                         Text = Comment.Text,
-                        Date = DateTime.Now
+                        Date = commentDate
                     };//СФормировать запрос на создание
 
                     var response = await _apiService.AddAsync(postDto);//Отправить запрос
@@ -281,6 +302,9 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                     Text = comment.Text,
                     Date = comment.Date
                 };
+                // БАГ 46: инициализация даты/времени из существующего комментария
+                _selectedUploadDate = comment.Date;
+                _uploadTime = comment.Date.ToString("HH:mm");
                 Title = $"Редактирование комментария";
             }
             else
@@ -289,6 +313,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                 {
                     Date = DateTime.Now
                 };
+                _selectedUploadDate = DateTime.Now;
                 Title = "Создание комментария";
             }
 

@@ -7,6 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 	<UseWindowsForms>true</UseWindowsForms>
+	<ApplicationIcon>Resources\Images\VVideo-—-min.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,6 +33,11 @@
     <None Remove="Resources\Images\ic_pause.png" />
     <None Remove="Resources\Images\ic_volume.png" />
     <None Remove="Resources\Images\ic_mute.png" />
+    <None Remove="Resources\Images\VVideo — full.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\Images\VVideo-—-min.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -80,6 +86,9 @@
     <Resource Include="Resources\Images\ic_pause.png" />
     <Resource Include="Resources\Images\ic_volume.png" />
     <Resource Include="Resources\Images\ic_mute.png" />
+    <Resource Include="Resources\Images\VVideo — full.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>

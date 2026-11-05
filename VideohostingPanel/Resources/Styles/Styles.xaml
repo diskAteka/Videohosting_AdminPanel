@@ -548,6 +548,113 @@
         </Style.Triggers>
     </Style>
 
+    <!-- БАГ 48: единый стиль кнопок управления окном (используется на главной и в модальном оверлее) -->
+    <!-- Кнопка «свернуть» -->
+    <Style x:Key="MinimizeCaptionButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="35"/>
+        <Setter Property="Height" Value="35"/>
+        <Setter Property="Background" Value="#B3000000"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                        <Rectangle Width="12" Height="2" Fill="White"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#B32B2B2B"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Кнопка «оконный режим / на весь экран» -->
+    <Style x:Key="MaximizeCaptionButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="35"/>
+        <Setter Property="Height" Value="35"/>
+        <Setter Property="Background" Value="#B3000000"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                        <Path Width="11" Height="11"
+                              Data="M0,3 L8,3 L8,11 L0,11 Z M6,0 L14,0 L14,8"
+                              Stroke="White" StrokeThickness="1.5" Fill="Transparent"
+                              Stretch="Uniform"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#B32B2B2B"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Кнопка «закрыть» -->
+    <Style x:Key="CloseCaptionButtonStyle" TargetType="Button">
+        <Setter Property="Width" Value="35"/>
+        <Setter Property="Height" Value="35"/>
+        <Setter Property="Background" Value="#B3C42B1C"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
+                        <Path Width="10" Height="10"
+                              Data="M0,0 L10,10 M10,0 L0,10"
+                              Stroke="White" StrokeThickness="1.5"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#E0C42B1C"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Кнопка «выйти»: красная закруглённая, текст без иконки -->
+    <Style x:Key="LogoutButtonStyle" TargetType="Button">
+        <Setter Property="Height" Value="35"/>
+        <Setter Property="Background" Value="{StaticResource PrimaryRedBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Padding" Value="14,0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="10"
+                            Padding="{TemplateBinding Padding}">
+                        <TextBlock Text="{TemplateBinding Content}"
+                                   Foreground="White"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#E0C42B1C"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- Стиль для ползунков -->
     <Style x:Key="VideoSliderStyle" TargetType="Slider">
         <Setter Property="Minimum" Value="0"/>
@@ -952,7 +1059,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         CornerRadius="14">
-                        <Grid>
+                        <Grid x:Name="PART_Root">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -1002,6 +1109,21 @@
                                     </ControlTemplate>
                                 </Button.Template>
                             </Button>
+
+                            <!-- БАГ 46: выпадающий календарь. Имена PART_Popup/PART_Calendar
+                                 обязательны — без них DatePicker не открывает Popup. -->
+                            <Popup x:Name="PART_Popup"
+                                   AllowsTransparency="True"
+                                   Placement="Bottom"
+                                   PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                   StaysOpen="False"
+                                   PopupAnimation="Fade">
+                                <Calendar x:Name="PART_Calendar"
+                                          Background="{StaticResource DarkSecondaryBrush}"
+                                          Foreground="{StaticResource TextPrimaryBrush}"
+                                          BorderBrush="{StaticResource PrimaryPurpleBrush}"
+                                          BorderThickness="2"/>
+                            </Popup>
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>

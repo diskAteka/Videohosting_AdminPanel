@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SharedLib.Contracts.Admin;
 using SharedLib.Models;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using VideohostingPanel.Resources.Elements;
@@ -35,6 +36,9 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
 
         [ObservableProperty]
         private bool _isVerifier;
+
+        [ObservableProperty]
+        private string _roleDisplay = "Admin";
 
         [ObservableProperty]
         private string _userDisplayName = "Администратор";
@@ -70,11 +74,11 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         [ObservableProperty]
         private bool _isAddButtonVisible = true;
 
-        // Типы логов
+        // Типы логов (соответствуют CHECK-констрейнту БД, БАГ 44)
         [ObservableProperty]
         private ObservableCollection<string> _logTypes = new()
         {
-            "Все", "Info", "Warning", "Error", "Create", "Update", "Delete"
+            "Все", "INSERT", "UPDATE", "DELETE"
         };
 
         [ObservableProperty]
@@ -151,6 +155,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
             {
                 IsAdmin = false;
                 IsVerifier = true;
+                RoleDisplay = Roles.Verifier.ToString();
                 UserDisplayName = _tokenHandler.UserName ?? "Верификатор";
                 _ = LoadUnverifiedVideosAsync();
             }
@@ -158,6 +163,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
             {
                 IsAdmin = true;
                 IsVerifier = false;
+                RoleDisplay = Roles.Admin.ToString();
                 UserDisplayName = _tokenHandler.UserName ?? "Администратор";
 
                 // Инициализация таблиц (запускает загрузку данных администратора)
@@ -219,6 +225,55 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
             IsLogTypeVisible = table == Tables.ServerLog;
             IsAddButtonVisible = table != Tables.ServerLog;
         }
+
+        // БАГ 44: при смене типа лога перезагружаем список с серверным фильтром
+        partial void OnSelectedLogTypeChanged(string value)
+        {
+            if (IsLogTypeVisible)
+            {
+                CurrentPage = 1;
+                _ = LoadRecordsCommand.ExecuteAsync(null);
+            }
+        }
+
+        #region Фильтры текущей таблицы (БАГ 44)
+
+        // Фильтры текущей таблицы для запросов списка и счётчика
+        private string? CurrentNameFilter
+        {
+            get
+            {
+                var table = (Tables)SelectedTable!.Id;
+                if (table is Tables.Video or Tables.User or Tables.Emploee
+                    && !string.IsNullOrWhiteSpace(SearchNameText))
+                    return SearchNameText.Trim();
+                return null;
+            }
+        }
+
+        private string? CurrentTextFilter
+        {
+            get
+            {
+                var table = (Tables)SelectedTable!.Id;
+                if (table == Tables.Comment && !string.IsNullOrWhiteSpace(SearchText))
+                    return SearchText.Trim();
+                return null;
+            }
+        }
+
+        private string? CurrentActionTypeFilter
+        {
+            get
+            {
+                var table = (Tables)SelectedTable!.Id;
+                if (table == Tables.ServerLog && SelectedLogType != "Все")
+                    return SelectedLogType;
+                return null;
+            }
+        }
+
+        #endregion
         #endregion
 
         #region Команды загрузки данных
@@ -253,7 +308,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
                 }
 
                 TotalItems = await _apiService.GetCountAsync(
-                    SelectedTable.ServerKey, IsAdmin);
+                    SelectedTable.ServerKey, IsAdmin, CurrentNameFilter, CurrentTextFilter, CurrentActionTypeFilter);
 
                 UpdatePaginationInfo();
             }
@@ -271,7 +326,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         private async Task LoadVideosAsync()
         {
             var videos = await _apiService.GetListAsync<GetVideoResponse>(
-                CurrentPage, PageSize, sortBy: null, SortIsAscending);
+                CurrentPage, PageSize, sortBy: null, SortIsAscending, searchName: CurrentNameFilter);
             foreach (var video in videos)
                 Records.Add(new VideoItemControl { DataContext = video });
         }
@@ -279,7 +334,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         private async Task LoadUsersAsync()
         {
             var users = await _apiService.GetListAsync<GetUserResponse>(
-                CurrentPage, PageSize, sortBy: null, SortIsAscending);
+                CurrentPage, PageSize, sortBy: null, SortIsAscending, searchName: CurrentNameFilter);
             foreach (var user in users)
                 Records.Add(new UserItemControl { DataContext = user });
         }
@@ -287,7 +342,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         private async Task LoadCommentsAsync()
         {
             var comments = await _apiService.GetListAsync<GetCommentResponse>(
-                CurrentPage, PageSize, sortBy: null, SortIsAscending);
+                CurrentPage, PageSize, sortBy: null, SortIsAscending, searchText: CurrentTextFilter);
             foreach (var comment in comments)
                 Records.Add(new CommentItemControl { DataContext = comment });
         }
@@ -295,7 +350,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         private async Task LoadLogsAsync()
         {
             var logs = await _apiService.GetListAsync<GetServerLogResponse>(
-                CurrentPage, PageSize, sortBy: null, SortIsAscending);
+                CurrentPage, PageSize, sortBy: null, SortIsAscending, actionType: CurrentActionTypeFilter);
             foreach (var log in logs)
                 Records.Add(new LogItemControl { DataContext = log });
         }
@@ -303,7 +358,7 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         private async Task LoadEmployeesAsync()
         {
             var employees = await _apiService.GetListAsync<Employee>(
-                CurrentPage, PageSize, sortBy: null, SortIsAscending);
+                CurrentPage, PageSize, sortBy: null, SortIsAscending, searchName: CurrentNameFilter);
             foreach (var employee in employees)
                 Records.Add(new EmployeeItemControl { DataContext = employee });
         }
@@ -335,6 +390,16 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         partial void OnCurrentPageChanged(int value) => NotifyPaginationCanExecuteChanged();
 
         partial void OnTotalItemsChanged(int value) => NotifyPaginationCanExecuteChanged();
+
+        // IsBusy объявлен в BaseViewModel, поэтому partial-метод OnIsBusyChanged
+        // здесь реализовать нельзя — ловим изменение через OnPropertyChanged.
+        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+
+            if (e.PropertyName == nameof(IsBusy))
+                NotifyPaginationCanExecuteChanged();
+        }
 
         private void NotifyPaginationCanExecuteChanged()
         {
@@ -417,12 +482,14 @@ namespace VideohostingPanel.ViewModels.WindowViewModels
         [RelayCommand]
         private async Task SearchByName()
         {
+            CurrentPage = 1;
             await LoadRecordsCommand.ExecuteAsync(null);
         }
 
         [RelayCommand]
         private async Task SearchByText()
         {
+            CurrentPage = 1;
             await LoadRecordsCommand.ExecuteAsync(null);
         }
         #endregion

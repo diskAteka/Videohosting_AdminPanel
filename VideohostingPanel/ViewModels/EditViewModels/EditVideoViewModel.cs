@@ -31,7 +31,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         private string _authorSearchId = string.Empty;
 
         [ObservableProperty]
-        private DateTime _selectedUploadDate = DateTime.UtcNow;
+        private DateTime? _selectedUploadDate = DateTime.Now;
 
         [ObservableProperty]
         private string _uploadTime = DateTime.Now.ToString("HH:mm");
@@ -69,16 +69,20 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                if (TimeSpan.TryParse(UploadTime, out TimeSpan time))
+                // БАГ 46: nullable-дата и строгий формат ЧЧ:ММ вместо TimeSpan.TryParse
+                if (SelectedUploadDate == null)
                 {
-                    SelectedUploadDate = SelectedUploadDate.Date + time;
+                    ModernMessageBox.Show("Укажите дату загрузки", "Предупреждение",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
-                else
+                if (!TimeFormatHelper.TryParseHHmm(UploadTime, out TimeSpan time))
                 {
                     ModernMessageBox.Show("Неверный формат времени. Используйте ЧЧ:ММ (например: 14:30)",
                         "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+                SelectedUploadDate = SelectedUploadDate.Value.Date + time;
                 if (SelectedAuthor != null)
                     Video.AuthorId = SelectedAuthor.Id;
                     
@@ -89,7 +93,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                 {
                     Name = Video.Name,
                     Description = Video.Description,
-                    DateUpload = SelectedUploadDate,
+                    DateUpload = SelectedUploadDate.Value,
                     Link = Video.Link,
                     Poster = Video.Poster,
                     Likes = Video.Likes,

@@ -111,7 +111,7 @@
                             </Grid.ColumnDefinitions>
                             <!-- Кнопка удалить-->
                             <Button Grid.Column="0" Content="Удалить запись" 
-                                    Command="{Binding DeleteAsyncCommand}"
+                                    Command="{Binding DeleteCommand}"
                                     Background="#66FF0000" 
                                     Style="{StaticResource BaseButtonStyle}"
                                     Height="45" Margin="10" HorizontalAlignment="Left" Width="150"

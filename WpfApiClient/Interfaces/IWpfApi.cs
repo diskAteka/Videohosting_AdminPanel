@@ -12,7 +12,7 @@ namespace WpfApiClient.Interfaces
         #endregion
 
         #region Списки (GET)
-        Task<List<T>> GetListAsync<T>(int page = 1, int pageSize = 20, string? sortBy = null, bool sortAscending = true);
+        Task<List<T>> GetListAsync<T>(int page = 1, int pageSize = 20, string? sortBy = null, bool sortAscending = true, string? searchName = null, string? searchText = null, string? actionType = null);
         Task<List<UserVideoListItemDto>> GetUserVideosAsync(int userId);
         Task<List<GetVideoResponse>> GetUnverifiedVideosAsync(int page = 1, int pageSize = 20);
         #endregion
@@ -39,7 +39,7 @@ namespace WpfApiClient.Interfaces
         #endregion
 
         #region Статистика
-        Task<int> GetCountAsync(string type, bool isAdmin = true);
+        Task<int> GetCountAsync(string type, bool isAdmin = true, string? searchName = null, string? searchText = null, string? actionType = null);
         #endregion
 
         #region Верификация видео (PUT)

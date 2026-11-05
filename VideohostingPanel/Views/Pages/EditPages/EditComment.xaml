@@ -193,7 +193,7 @@
                             <!-- Кнопка удалить-->
                             <Button Content="Удалить запись" 
                                     Grid.Column="0"
-                                    Command="{Binding DeleteAsyncCommand}"
+                                    Command="{Binding DeleteCommand}"
                                     Background="#66FF0000" 
                                     Style="{StaticResource BaseButtonStyle}"
                                     Height="45" 

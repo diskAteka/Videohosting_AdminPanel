@@ -42,9 +42,7 @@
             VerticalAlignment="Center">
             <StackPanel Margin="30">
                 <!-- Заголовок -->
-                <TextBlock Text="MyVideo"
-                       FontSize="28" FontWeight="Bold"
-                       Foreground="{StaticResource PrimaryRedBrush}"
+                <Image Source="/Resources/Images/VVideo — full.png" Height="40"
                        HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
                 <TextBlock Text="Администрирование БД"

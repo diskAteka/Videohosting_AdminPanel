@@ -27,10 +27,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         private bool _isEditMode;
 
         [ObservableProperty]
-        private string _password = string.Empty;
-
-        [ObservableProperty]
-        private DateTime _registerDateSelected = DateTime.UtcNow;
+        private DateTime? _registerDateSelected = DateTime.Now;
 
         [ObservableProperty]
         private string _registerTime = DateTime.Now.ToString("HH:mm");
@@ -65,16 +62,20 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                     ModernMessageBox.Show("Некорректный формат Email", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                if (TimeSpan.TryParse(RegisterTime, out TimeSpan time))
+                // БАГ 46: nullable-дата и строгий формат ЧЧ:ММ вместо TimeSpan.TryParse
+                if (RegisterDateSelected == null)
                 {
-                    RegisterDateSelected = RegisterDateSelected.Date + time;
+                    ModernMessageBox.Show("Укажите дату регистрации", "Предупреждение",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
-                else
+                if (!TimeFormatHelper.TryParseHHmm(RegisterTime, out TimeSpan time))
                 {
                     ModernMessageBox.Show("Неверный формат времени. Используйте ЧЧ:ММ (например: 14:30)",
                         "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+                RegisterDateSelected = RegisterDateSelected.Value.Date + time;
 
                 if (IsEditMode) //Если страница открыта в режиме редактирования
                 {
@@ -84,7 +85,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                         Email = User.Email,
                         CanUpload = User.CanUpload,
                         IsActive = User.IsActive,
-                        RegisteredAt = RegisterDateSelected,
+                        RegisteredAt = RegisterDateSelected.Value,
                     };
                     var response = await _apiService.UpdateAsync(User.Id, updateUserRequest);
                     if (response.Success)
@@ -104,28 +105,19 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                 }
                 else
                 {
-                    if (string.IsNullOrEmpty(Password))
-                    {
-                        ModernMessageBox.Show("Укажите пароль пользователя", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-                    if (Password.Length < AppConfig.PASSWORD_MIN_LENGTH || Password.Length > AppConfig.PASSWORD_MAX_LENGTH)
-                    {
-                        ModernMessageBox.Show($"Некорректная длина пароля (от {AppConfig.PASSWORD_MIN_LENGTH} до {AppConfig.PASSWORD_MAX_LENGTH} символов)", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
                     var newUserRequest = new PostUserRequest
                     {
                         UserName = User.Name,
                         Email = User.Email,
-                        Password = Password, //На сервере будет захеширован
+                        Password = GenerateTemporaryPassword(), //На сервере будет захеширован
                         CanUpload = User.CanUpload,
                         IsActive = User.IsActive,
+                        RegisteredAt = DateTime.UtcNow,
                     };
                     var response = await _apiService.AddAsync(newUserRequest);
                     if (response.Success)
                     {
-                        ModernMessageBox.Show($"Пользователь успешно создан\nИзмененные таблицы:\n" +
+                        ModernMessageBox.Show($"Пользователь успешно создан\nПароль не отображается — задайте его через «Сбросить пароль».\nИзмененные таблицы:\n" +
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                         _ = _apiService.LogAsync(AuditTable.User, AuditAction.Insert, $"Создан пользователь «{User.Name}»");
@@ -137,7 +129,6 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
-                    Password = string.Empty;
                 }
             }
             catch (Exception ex)
@@ -221,6 +212,9 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                 IsBusy = false;
             }
         }
+
+        private static string GenerateTemporaryPassword()
+            => Guid.NewGuid().ToString("N").Substring(0, 12);
 
         [RelayCommand]
         private void GoBack()

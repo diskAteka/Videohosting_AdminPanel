@@ -105,7 +105,7 @@
 
                             <Border x:Name="VideoContainer" Height="420" MinHeight="260" Margin="0,0,0,20" Background="Black"
                                     BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1"
-                                    CornerRadius="15" ClipToBounds="True">
+                                    CornerRadius="15" ClipToBounds="True" Padding="0,20,0,0">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*"/>
@@ -113,7 +113,7 @@
                                     </Grid.RowDefinitions>
 
                                     <!-- Хост всегда видим: HWND должен существовать с реальными размерами -->
-                                    <WindowsFormsHost Grid.Row="0" x:Name="VideoHost">
+                                    <WindowsFormsHost Grid.Row="0" x:Name="VideoHost" >
                                         <!-- VLC плеер будет добавлен программно -->
                                     </WindowsFormsHost>
 

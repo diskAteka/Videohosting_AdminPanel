@@ -67,7 +67,8 @@ namespace WpfApiClient.Services
                 $"Зарегистрируйте его в {nameof(EntityEndpoints)}.");
         }
 
-        public async Task<List<T>> GetListAsync<T>(int page = 1, int pageSize = 20, string? sortBy = null, bool sortAscending = true)
+        public async Task<List<T>> GetListAsync<T>(int page = 1, int pageSize = 20, string? sortBy = null, bool sortAscending = true,
+            string? searchName = null, string? searchText = null, string? actionType = null)
         {
             var entity = GetEntityEndpoint<T>();
             var queryParams = new List<string>
@@ -79,6 +80,14 @@ namespace WpfApiClient.Services
             if (!string.IsNullOrWhiteSpace(sortBy))
                 queryParams.Add($"SortBy={Uri.EscapeDataString(sortBy)}");
             queryParams.Add($"SortAscending={sortAscending.ToString().ToLower()}");
+
+            // БАГ 44: фильтры поиска по имени / тексту / типу действия (пустые отключают фильтр)
+            if (!string.IsNullOrWhiteSpace(searchName))
+                queryParams.Add($"SearchName={Uri.EscapeDataString(searchName)}");
+            if (!string.IsNullOrWhiteSpace(searchText))
+                queryParams.Add($"SearchText={Uri.EscapeDataString(searchText)}");
+            if (!string.IsNullOrWhiteSpace(actionType))
+                queryParams.Add($"ActionType={Uri.EscapeDataString(actionType)}");
 
             var url = $"{_apiBaseUrl}/get/{entity}s?{string.Join("&", queryParams)}";
             var response = await _httpClient.GetAsync(url);
@@ -182,10 +191,24 @@ namespace WpfApiClient.Services
             };
         }
 
-        public async Task<int> GetCountAsync(string type, bool isAdmin = true)
+        public async Task<int> GetCountAsync(string type, bool isAdmin = true,
+            string? searchName = null, string? searchText = null, string? actionType = null)
         {
             var rolePath = isAdmin ? "admin" : "virifier";
-            var url = $"{_apiBaseUrl}/{rolePath}/get/count?type={Uri.EscapeDataString(type)}";
+            var queryParams = new List<string>
+            {
+                $"type={Uri.EscapeDataString(type)}"
+            };
+
+            // БАГ 44: счётчик должен считать по тем же фильтрам, что и список
+            if (!string.IsNullOrWhiteSpace(searchName))
+                queryParams.Add($"SearchName={Uri.EscapeDataString(searchName)}");
+            if (!string.IsNullOrWhiteSpace(searchText))
+                queryParams.Add($"SearchText={Uri.EscapeDataString(searchText)}");
+            if (!string.IsNullOrWhiteSpace(actionType))
+                queryParams.Add($"ActionType={Uri.EscapeDataString(actionType)}");
+
+            var url = $"{_apiBaseUrl}/{rolePath}/get/count?{string.Join("&", queryParams)}";
             var response = await _httpClient.GetAsync(url);
 
             response.EnsureSuccessStatusCode();

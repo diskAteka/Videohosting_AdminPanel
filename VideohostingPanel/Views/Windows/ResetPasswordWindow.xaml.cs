@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -69,11 +70,11 @@ namespace VideohostingPanel.Views.Windows
         }
 
         /// <summary>
-        /// Обработчик изменения пароля
+        /// Обработчик изменения пароля (БАГ 47: текст всегда виден)
         /// </summary>
-        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        private void PasswordInput_TextChanged(object sender, TextChangedEventArgs e)
         {
-            _userPassword = PasswordBox.Password;
+            _userPassword = PasswordInput.Text;
         }
 
         /// <summary>
@@ -112,7 +113,7 @@ namespace VideohostingPanel.Views.Windows
         }
 
         /// <summary>
-        /// Анимация мигания обводки PasswordBox белым цветом (2 раза)
+        /// Анимация мигания обводки поля пароля белым цветом (2 раза)
         /// </summary>
         private async void FlashPasswordBorder()
         {

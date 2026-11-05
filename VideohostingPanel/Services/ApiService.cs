@@ -23,9 +23,11 @@ namespace VideohostingPanel.Services
         }
 
         // Получение списка
-        public async Task<List<T>> GetListAsync<T>(int page = 1, int pageSize = 20, string? sortBy = null, bool sortAscending = true)
+        public async Task<List<T>> GetListAsync<T>(int page = 1, int pageSize = 20, string? sortBy = null, bool sortAscending = true,
+            string? searchName = null, string? searchText = null, string? actionType = null)
         {
-            return await _apiClient.GetListAsync<T>(page, pageSize, sortBy, sortAscending);
+            return await _apiClient.GetListAsync<T>(page, pageSize, sortBy, sortAscending,
+                searchName, searchText, actionType);
         }
 
         // Получение по ID
@@ -60,9 +62,10 @@ namespace VideohostingPanel.Services
         }
 
         // Получение количества записей
-        public async Task<int> GetCountAsync(string type, bool isAdmin = true)
+        public async Task<int> GetCountAsync(string type, bool isAdmin = true,
+            string? searchName = null, string? searchText = null, string? actionType = null)
         {
-            return await _apiClient.GetCountAsync(type, isAdmin);
+            return await _apiClient.GetCountAsync(type, isAdmin, searchName, searchText, actionType);
         }
 
         // Получение видео пользователя

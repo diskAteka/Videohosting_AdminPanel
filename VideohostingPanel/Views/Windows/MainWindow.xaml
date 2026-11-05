@@ -106,11 +106,9 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="20,15">
-                        <TextBlock Text="MyVideo" 
-                                  FontSize="20" FontWeight="Bold"
-                                  Foreground="{StaticResource PrimaryRedBrush}"/>
-                        <TextBlock Text="Admin" 
-                                  FontSize="16" Margin="10,0,0,0"
+                        <Image Source="/Resources/Images/VVideo — full.png" Height="30"/>
+                        <TextBlock Text="{Binding RoleDisplay}" 
+                                  FontSize="16" Margin="10,0,0,0" VerticalAlignment="Bottom"
                                   Foreground="{StaticResource PrimaryPurpleBrush}"/>
                     </StackPanel>
 
@@ -120,66 +118,30 @@
                                   Foreground="{StaticResource TextSecondaryBrush}"
                                   VerticalAlignment="Center"/>
 
+                        <!-- БАГ 48: кнопка выхода — слева от всех кнопок окна, красная, текст «выйти», без иконки -->
+                        <Button Command="{Binding LogoutCommand}"
+                                Content="выйти"
+                                Style="{StaticResource LogoutButtonStyle}"
+                                Margin="20,0,0,0"
+                                ToolTip="Выйти из аккаунта"/>
+
                         <!-- Кнопка сворачивания -->
                         <Button Click="MinimizeButton_Click"
-                                Width="35" Height="35"
-                                Background="Transparent" BorderThickness="0"
-                                Margin="15,0,0,0" Cursor="Hand">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
-                                        <Rectangle Width="12" Height="2" Fill="{StaticResource TextSecondaryBrush}"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-
-                        <!-- Кнопка выхода -->
-                        <Button Command="{Binding LogoutCommand}"
-                                Width="35" Height="35"
-                                Background="Transparent" BorderThickness="0"
-                                Margin="5,0,0,0" Cursor="Hand">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
-                                        <Image Source="/Resources/Images/ic_arrow_back.png" Width="15" Height="15"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
+                                Style="{StaticResource MinimizeCaptionButtonStyle}"
+                                Margin="15,0,0,0"
+                                ToolTip="Свернуть"/>
 
                         <!-- Кнопка разворачивания -->
                         <Button Click="MaximizeButton_Click"
-                                Width="35" Height="35"
-                                Background="Transparent" BorderThickness="0"
-                                Margin="5,0,0,0" Cursor="Hand">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
-                                        <Rectangle Width="11" Height="11" Stroke="{StaticResource TextSecondaryBrush}"
-                                                   StrokeThickness="1.5" Fill="Transparent"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
+                                Style="{StaticResource MaximizeCaptionButtonStyle}"
+                                Margin="5,0,0,0"
+                                ToolTip="Оконный режим / на весь экран"/>
 
                         <!-- Кнопка закрытия -->
                         <Button Command="{Binding CloseApplicationCommand}"
-                                Width="35" Height="35"
-                                Background="Transparent" BorderThickness="0"
-                                Margin="5,0,0,0" Cursor="Hand">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
-                                        <Image Source="/Resources/Images/ic_close.png" Width="15" Height="15"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
+                                Style="{StaticResource CloseCaptionButtonStyle}"
+                                Margin="5,0,0,0"
+                                ToolTip="Закрыть приложение"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -419,6 +381,7 @@
                Visibility="Collapsed"/>
 
         <!-- Кнопки управления окном для модальных страниц (редактирование, верификация) -->
+        <!-- БАГ 48: единые стили с кнопками главного окна -->
         <StackPanel x:Name="ModalWindowButtons"
                     Panel.ZIndex="2"
                     Orientation="Horizontal"
@@ -426,50 +389,15 @@
                     VerticalAlignment="Top"
                     Margin="0,10,15,0"
                     Visibility="Collapsed">
-            <Button Width="35" Height="35"
-                    Background="#B3000000" BorderThickness="0"
-                    Cursor="Hand" ToolTip="Свернуть"
-                    Click="MinimizeButton_Click">
-                <Button.Template>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
-                            <Rectangle Width="12" Height="2" Fill="White"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Button.Template>
-            </Button>
-            <Button Width="35" Height="35"
-                    Background="#B3000000" BorderThickness="0"
-                    Margin="5,0,0,0" Cursor="Hand" ToolTip="Оконный режим / на весь экран"
-                    Click="MaximizeButton_Click">
-                <Button.Template>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
-                            <Path Width="11" Height="11"
-                                  Data="M0,3 L8,3 L8,11 L0,11 Z M6,0 L14,0 L14,8"
-                                  Stroke="White" StrokeThickness="1.5" Fill="Transparent"
-                                  Stretch="Uniform"
-                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Button.Template>
-            </Button>
-            <Button Width="35" Height="35"
-                    Background="#B3C42B1C" BorderThickness="0"
-                    Margin="5,0,0,0" Cursor="Hand" ToolTip="Закрыть приложение"
-                    Click="CloseButton_Click">
-                <Button.Template>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="17.5">
-                            <Path Width="10" Height="10"
-                                  Data="M0,0 L10,10 M10,0 L0,10"
-                                  Stroke="White" StrokeThickness="1.5"
-                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Button.Template>
-            </Button>
+            <Button Style="{StaticResource MinimizeCaptionButtonStyle}"
+                    ToolTip="Свернуть"
+                    Click="MinimizeButton_Click"/>
+            <Button Style="{StaticResource MaximizeCaptionButtonStyle}"
+                    Margin="5,0,0,0" ToolTip="Оконный режим / на весь экран"
+                    Click="MaximizeButton_Click"/>
+            <Button Style="{StaticResource CloseCaptionButtonStyle}"
+                    Margin="5,0,0,0" ToolTip="Закрыть приложение"
+                    Click="CloseButton_Click"/>
         </StackPanel>
     </Grid>
 </Window>

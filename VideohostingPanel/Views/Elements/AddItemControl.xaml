@@ -16,38 +16,21 @@
 
     <Border Background="{StaticResource DarkTertiaryBrush}"
             CornerRadius="15" Margin="0,0,0,15"
-            BorderBrush="{StaticResource PrimaryPurpleBrush}" BorderThickness="1"
+            BorderThickness="1"
             Cursor="Hand" MouseLeftButtonUp="Border_Click">
 
-        <Border.RenderTransform>
-            <ScaleTransform ScaleX="1" ScaleY="1"/>
-        </Border.RenderTransform>
-        <Border.Triggers>
-            <EventTrigger RoutedEvent="Border.MouseEnter">
-                <BeginStoryboard>
-                    <Storyboard>
-                        <DoubleAnimation Duration="0:0:0.2"
-                                         Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
-                                         To="1.02"/>
-                        <DoubleAnimation Duration="0:0:0.2"
-                                         Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
-                                         To="1.02"/>
-                    </Storyboard>
-                </BeginStoryboard>
-            </EventTrigger>
-            <EventTrigger RoutedEvent="Border.MouseLeave">
-                <BeginStoryboard>
-                    <Storyboard>
-                        <DoubleAnimation Duration="0:0:0.2"
-                                         Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
-                                         To="1"/>
-                        <DoubleAnimation Duration="0:0:0.2"
-                                         Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
-                                         To="1"/>
-                    </Storyboard>
-                </BeginStoryboard>
-            </EventTrigger>
-        </Border.Triggers>
+        <!-- БАГ 43: вместо анимации масштаба — красная обводка при наведении -->
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="BorderBrush" Value="{StaticResource PrimaryPurpleBrush}"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="BorderBrush" Value="{StaticResource PrimaryRedBrush}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+
         <Grid Margin="15" HorizontalAlignment="Center">
             <Image Source="/Resources/Images/ic_plus.png" Width="30" Height="30" />
         </Grid>

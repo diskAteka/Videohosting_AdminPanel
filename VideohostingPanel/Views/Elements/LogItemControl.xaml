@@ -30,9 +30,9 @@
                 <TextBlock FontSize="11" Margin="0,4,0,0"
                            Foreground="{StaticResource TextSecondaryBrush}">
                     <Run Text="Таблица:"/>
-                    <Run Text="{Binding AffectedTable, Mode=OneWay}"/>
-                    <Run Text="  ·  Сотрудник #"/>
-                    <Run Text="{Binding UserId, Mode=OneWay}"/>
+                    <Run Text="{Binding AffectedTableDisplay, Mode=OneWay}"/>
+                    <Run Text="  ·  Сотрудник "/>
+                    <Run Text="{Binding EmployeeDisplay, Mode=OneWay}"/>
                 </TextBlock>
             </StackPanel>
 

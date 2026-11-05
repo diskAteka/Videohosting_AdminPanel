@@ -59,7 +59,7 @@ namespace VideohostingPanel.ViewModels.AddViewModels
         private VerificationStatusItem _selectedVerificationStatus;
 
         [ObservableProperty]
-        private DateTime _selectedUploadDate = DateTime.UtcNow;
+        private DateTime? _selectedUploadDate = DateTime.Now;
 
         [ObservableProperty]
         private string _uploadTime = DateTime.Now.ToString("HH:mm");
@@ -144,20 +144,24 @@ namespace VideohostingPanel.ViewModels.AddViewModels
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                if (TimeSpan.TryParse(UploadTime, out TimeSpan time))
+                // БАГ 46: nullable-дата и строгий формат ЧЧ:ММ вместо TimeSpan.TryParse
+                if (SelectedUploadDate == null)
                 {
-                    SelectedUploadDate = SelectedUploadDate.Date + time;
+                    ModernMessageBox.Show("Укажите дату загрузки", "Предупреждение",
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
-                else
+                if (!TimeFormatHelper.TryParseHHmm(UploadTime, out TimeSpan time))
                 {
                     ModernMessageBox.Show("Неверный формат времени. Используйте ЧЧ:ММ (например: 14:30)",
                         "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+                SelectedUploadDate = SelectedUploadDate.Value.Date + time;
 
                 Video.AuthorId = SelectedAuthor.Id;
                 Video.IsVerified = SelectedVerificationStatus.IsVerified;
-                Video.DateUpload = SelectedUploadDate;
+                Video.DateUpload = SelectedUploadDate.Value;
 
                 if (!PosterIsSelected)
                 {
