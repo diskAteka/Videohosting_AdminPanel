@@ -27,6 +27,9 @@ namespace VideohostingPanel.ViewModels.EditViewModels
         private bool _isEditMode;
 
         [ObservableProperty]
+        private string _password = string.Empty;
+
+        [ObservableProperty]
         private DateTime? _registerDateSelected = DateTime.Now;
 
         [ObservableProperty]
@@ -108,11 +111,22 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                 }
                 else
                 {
+                    if (string.IsNullOrEmpty(Password))
+                    {
+                        ModernMessageBox.Show("Укажите пароль пользователя", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+                    if (Password.Length < 6 || Password.Length > 16)
+                    {
+                        ModernMessageBox.Show("Пароль должен содержать от 6 до 16 символов", "Предупреждение", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
                     var newUserRequest = new PostUserRequest
                     {
                         UserName = User.Name,
                         Email = User.Email,
-                        Password = GenerateTemporaryPassword(), //На сервере будет захеширован
+                        Password = Password, //На сервере будет захеширован
                         CanUpload = User.CanUpload,
                         IsActive = User.IsActive,
                         RegisteredAt = DateTime.UtcNow,
@@ -120,7 +134,7 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                     var response = await _apiService.AddAsync(newUserRequest);
                     if (response.Success)
                     {
-                        ModernMessageBox.Show($"Пользователь успешно создан\nПароль не отображается — задайте его через «Сбросить пароль».\nИзмененные таблицы:\n" +
+                        ModernMessageBox.Show($"Пользователь успешно создан\nИзмененные таблицы:\n" +
                             $" {DisplayChangesHelper.GetAffectedTablesString(response.AffectedTables)}",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                         _ = _apiService.LogAsync(AuditTable.User, AuditAction.Insert, $"Создан пользователь «{User.Name}»");
@@ -221,9 +235,6 @@ namespace VideohostingPanel.ViewModels.EditViewModels
                 IsBusy = false;
             }
         }
-
-        private static string GenerateTemporaryPassword()
-            => Guid.NewGuid().ToString("N").Substring(0, 12);
 
         [RelayCommand]
         private void GoBack()
