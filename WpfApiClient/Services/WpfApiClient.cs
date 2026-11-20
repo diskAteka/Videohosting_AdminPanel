@@ -178,10 +178,6 @@ namespace WpfApiClient.Services
             return await ReadUpdateRezultAsync(response);
         }
 
-        // UpdateRezult — структура с get-only свойствами Success/AffectedTables.
-        // System.Text.Json для структур предпочитает конструктор по умолчанию и не
-        // может заполнить get-only свойства, из-за чего Success всегда false.
-        // Поэтому читаем ответ в промежуточный DTO и собираем UpdateRezult сами.
         private async Task<UpdateRezult> ReadUpdateRezultAsync(HttpResponseMessage response)
         {
             var dto = await response.Content.ReadFromJsonAsync<UpdateRezultDto>(_jsonOptions);

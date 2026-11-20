@@ -47,9 +47,18 @@ namespace VideohostingPanel.Views.Windows
             {
                 UserId = userId,
                 UserName = userName,
-                UserEmail = userEmail,
-                Owner = Application.Current.MainWindow
+                UserEmail = userEmail
             };
+
+            // Application.MainWindow здесь не задан (MainWindow создаётся вручную после логина),
+            // поэтому владельца берём из реально активного окна, как это делает ModernMessageBox.
+            var owner = Application.Current?.Windows
+                .OfType<Window>()
+                .FirstOrDefault(w => w.IsActive)
+                ?? Application.Current?.MainWindow;
+
+            if (owner != null && owner != window)
+                window.Owner = owner;
 
             if (window.ShowDialog() == true)
             {
